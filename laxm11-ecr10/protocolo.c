@@ -29,5 +29,6 @@ int main(int argc, char const *argv[])
 {
 
 	FILE *infile = fopen ("teste.txt","r");
+	fclose (infile);
 	return 0;
 }
