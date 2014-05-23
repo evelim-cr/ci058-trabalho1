@@ -4,6 +4,15 @@
 #include "conexao.h"
 // #include "protocolo.h"
 
+#define NRM  "\x1B[0m"
+#define RED  "\x1B[31m"
+#define GRN  "\x1B[32m"
+#define YEL  "\x1B[33m"
+#define BLU  "\x1B[34m"
+#define MAG  "\x1B[35m"
+#define CYN  "\x1B[36m"
+#define WHT  "\x1B[37m"
+
 void cdLocal (char *path);
 void lsLocal ();
 void catLocal();
@@ -35,6 +44,14 @@ int main(int argc, char const *argv[])
             }
             case 2: // LS Remoto
             {
+                printf(NRM "Testando cor NRM\n");
+                printf(RED "Testando cor RED\n");
+                printf(GRN "Testando cor GRN\n");
+                printf(YEL "Testando cor YEL\n");
+                printf(BLU "Testando cor BLU\n");
+                printf(MAG "Testando cor MAG\n");
+                printf(CYN "Testando cor CYN\n");
+                printf(WHT "Testando cor WHT\n");
                 PressioneEnter();
                 break;
             }
@@ -83,7 +100,7 @@ void cdLocal (char *path)
 {
     if (chdir(path))
     {
-        puts ("Mudanca de diretorio falhou!");
+        printf(RED "Mudanca de diretorio falhou!\n" NRM);
         PressioneEnter();
     }
 }
@@ -153,21 +170,21 @@ char *LerStringDin (int *tam)
 void exibeMenu()
 {
     system ("clear");
-    printf("Diretório Local: "); puts (DirAtualLocal());
+    printf(YEL "Diretório Local: "); puts (DirAtualLocal()); printf(NRM);
     printf
-        ("\t+-----------Client----------+\n"
-         "\t|                           |\n"
-         "\t|     (1) LS Local.         |\n"
-         "\t|     (2) LS Remoto.        |\n"
-         "\t|     (3) CD Local.         |\n"
-         "\t|     (4) CD Remoto.        |\n"
-         "\t|     (5) CAT Local.        |\n"
-         "\t|     (6) CAT Remoto.       |\n"
-         "\t|     (7) GET.              |\n"
-         "\t|     (8) PUT.              |\n"
-         "\t|     (9) Encerrar.         |\n"
-         "\t|                           |\n"
-         "\t+---------------------------+\n"
+        (BLU "\t+-----------"YEL"Client"BLU"----------+\n"
+         BLU "\t|                           |\n" NRM
+         BLU "\t|     "CYN"(1) LS Local."BLU"         |\n" NRM
+         BLU "\t|     "CYN"(2) LS Remoto."BLU"        |\n" NRM
+         BLU "\t|     "CYN"(3) CD Local."BLU"         |\n" NRM
+         BLU "\t|     "CYN"(4) CD Remoto."BLU"        |\n" NRM
+         BLU "\t|     "CYN"(5) CAT Local."BLU"        |\n" NRM
+         BLU "\t|     "CYN"(6) CAT Remoto."BLU"       |\n" NRM
+         BLU "\t|     "CYN"(7) GET."BLU"              |\n" NRM
+         BLU "\t|     "CYN"(8) PUT."BLU"              |\n" NRM
+         BLU "\t|     "CYN"(9) Encerrar."BLU"         |\n" NRM
+         BLU "\t|                           |\n" NRM
+         BLU "\t+---------------------------+\n" NRM
          "? ");
 }
 
@@ -209,6 +226,6 @@ void PressioneEnter ()
 /*  Mostra na tela a mensagem para o usuario pressionar ENTER aguarda até que ele faça isso.
  */
 {
-    printf ("\nPressione <ENTER> para continuar...\n");
+    printf (YEL "\nPressione <ENTER> para continuar...\n" NRM);
     getchar();
 }
