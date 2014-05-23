@@ -1,34 +1,17 @@
-#include <stdio.h>
+#include "protocolo.h"
 
-typedef struct
+void envia_string (int socket, char *string)
 {
-	char inicio[8];
-	char tamanho[4];
-	char sequencia[4];
-	char tipo[4];
-	char erro[4];
-	char dados[16];
-} quadro;
+	if (write (socket, string, strlen(string)+1)==(strlen(string)+1))
+		puts ("Acho que deu certo...");
+	else
+		puts ("Erro ao enviar string");
+}
 
-#define TAMMSG 40
-#define CD 0
-#define LS 1
-#define PUT 2
-#define GET 3
-#define CAT 4
-#define DADOS 7
-#define TAMARQ 8
-#define MOSTRA 9
-#define ACK 10
-#define FIMTXT 11
-#define SUCESSO 13
-#define ERRO 14
-#define NACK 15
-
-int main(int argc, char const *argv[])
+void recebe_string (int socket, char *string)
 {
-
-	FILE *infile = fopen ("teste.txt","r");
-	fclose (infile);
-	return 0;
+	if (write (socket, string, strlen(string)+1)==(strlen(string)+1))
+		puts ("Acho que deu certo...");
+	else
+		puts ("Erro ao receber string");
 }
