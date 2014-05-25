@@ -9,9 +9,9 @@ int main(int argc, char const *argv[])
 	char string[50];
 	while(1)
 	{
-		bzero (string,50;
+		bzero (string,50);
 		recebe_string(s, string);
-		puts (string);
+		printf("String recebida: "); puts (string);
 	}
 	return 0;
 }

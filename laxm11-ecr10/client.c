@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <strings.h>
 #include "conexao.h"
+#include "protocolo.h"
 // #include "protocolo.h"
 
 #define NRM  "\x1B[0m"
@@ -64,6 +65,9 @@ int main(int argc, char const *argv[])
             }
             case 4: // CD Remoto
             {
+                char *str = LerStringDin(&tamStr);
+                envia_string(s, str);
+                free(str);
                 PressioneEnter();
                 break;
             }
