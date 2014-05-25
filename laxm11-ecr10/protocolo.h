@@ -11,6 +11,13 @@ typedef struct
 	char tipo[4];
 	char erro[4];
 	char dados[16];
+} mensagem_bin;
+
+typedef struct
+{
+	int tamanho;
+	int tipo;
+	char dados[2];
 } mensagem;
 
 #define TAMMSG 40
@@ -27,3 +34,10 @@ typedef struct
 #define SUCESSO 13
 #define ERRO 14
 #define NACK 15
+
+mensagem_bin MensagemToMensagem_bin (mensagem msg);
+mensagem Mensagem_binToMensagem (mensagem_bin msg_bin);
+void envia_string (int socket, char *string);
+void recebe_string (int socket, char *string);
+void envia_mensagem_bin (int socket, mensagem_bin *msg_bin);
+void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);

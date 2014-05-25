@@ -3,27 +3,14 @@
 #include <strings.h>
 #include "conexao.h"
 #include "protocolo.h"
-// #include "protocolo.h"
-
-#define NRM  "\x1B[0m"
-#define RED  "\x1B[31m"
-#define GRN  "\x1B[32m"
-#define YEL  "\x1B[33m"
-#define BLU  "\x1B[34m"
-#define MAG  "\x1B[35m"
-#define CYN  "\x1B[36m"
-#define WHT  "\x1B[37m"
+#include "funcoes.h"
 
 void cdLocal (char *path);
 void lsLocal ();
+void lsRemoto (int s);
 void catLocal();
 char *DirAtualLocal(void);
-char *LerStringDin(int *tam);
 void exibeMenu();
-void LimpaBuffer ();
-int LeOpcao (int min, int max);
-char *ngets (char *str, int n, FILE *fp);
-void PressioneEnter ();
 
 
 int main(int argc, char const *argv[])
@@ -45,14 +32,7 @@ int main(int argc, char const *argv[])
             }
             case 2: // LS Remoto
             {
-                printf(NRM "Testando cor NRM\n");
-                printf(RED "Testando cor RED\n");
-                printf(GRN "Testando cor GRN\n");
-                printf(YEL "Testando cor YEL\n");
-                printf(BLU "Testando cor BLU\n");
-                printf(MAG "Testando cor MAG\n");
-                printf(CYN "Testando cor CYN\n");
-                printf(WHT "Testando cor WHT\n");
+                lsRemoto(s);
                 PressioneEnter();
                 break;
             }
@@ -61,6 +41,7 @@ int main(int argc, char const *argv[])
                 printf ("Digite o caminho para o diretorio:\n? cd ");
                 char *path=LerStringDin(&tamStr);
                 cdLocal (path);
+                free (path);
                 break;
             }
             case 4: // CD Remoto
@@ -136,6 +117,36 @@ void lsLocal ()
     free (ls);
 }
 
+void lsRemoto (int s)
+{
+    mensagem msg;
+    mensagem_bin msg_bin;
+    msg.tipo = LS;
+    printf ("Digite os argumentos do ls remoto:\n? ls ");
+    int tamargs, i=0;
+    char *lsArgs=LerStringDin(&tamargs);
+    msg.tamanho=0;
+    while ( (tamargs+1)-i > 0)
+    {
+        if (msg.tamanho<2)
+        {
+            msg.dados[(msg.tamanho)++] = lsArgs[i];
+            i++;
+        }
+        else
+        {
+            msg_bin = MensagemToMensagem_bin(msg);
+            envia_mensagem_bin (s, &msg_bin);
+            // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
+            msg.tamanho=0;
+            bzero (msg.dados,2);
+        }
+    }
+/*ls [-laR\0] tamargs+1-i=5
+      i     msg.tamanho=2
+            msg.dados="-l"*/
+}
+
 void catLocal()
 {
     printf("Digite os argumentos do cat:\n? cat ");
@@ -153,22 +164,6 @@ void catLocal()
         puts ("cat falhou!");
     free (catArgs);
     free (cat);
-}
-
-char *LerStringDin (int *tam)
-{
-    int i;
-    char *string;
-    char letra;
-    string = (char *) malloc (sizeof(char));
-    for (i=0; (letra=getchar())!='\n' ; i++)
-    {
-        string[i] = letra;
-        string = (char *) realloc (string, sizeof(char)*(i+2));
-    }
-    string[i] = 0;
-    (*tam)=i;
-    return string;
 }
 
 void exibeMenu()
@@ -190,46 +185,4 @@ void exibeMenu()
          BLU "\t|                           |\n" NRM
          BLU "\t+---------------------------+\n" NRM
          "? ");
-}
-
-void LimpaBuffer ()
-/*  Descarta caracteres que estão no buffer de entrada até que encontre um '\n'.
- */
-{
-    while (getchar()!='\n');
-}
-
-int LeOpcao (int min, int max)
-{
-/*  Prende o usuario em um loop até que ele digite um  valor entre 'min' e 'max'. O Valor digitado é retornado pela função.
- */
-    char aux[10];
-    int n;
-    ngets(aux,6,stdin);
-    n = atoi(aux);
-    while ( (n<min) || (n>max) )
-    {
-        printf ("Valor Invalido, Tente novamente.\n? ");
-        ngets(aux,6,stdin);
-        n = atoi(aux);
-    }
-    return n;
-}
-
-char *ngets (char *str, int n, FILE *fp)
-{
-    str = fgets (str, n, stdin);
-    if (str[strlen(str)-1]=='\n')
-        str[strlen(str)-1]='\0';
-    else
-        LimpaBuffer();
-    return str;
-}
-
-void PressioneEnter ()
-/*  Mostra na tela a mensagem para o usuario pressionar ENTER aguarda até que ele faça isso.
- */
-{
-    printf (YEL "\nPressione <ENTER> para continuar...\n" NRM);
-    getchar();
 }
