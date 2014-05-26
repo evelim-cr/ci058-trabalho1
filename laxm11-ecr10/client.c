@@ -13,6 +13,7 @@ char *DirAtualLocal(void);
 void exibeMenu();
 
 
+
 int main(int argc, char const *argv[])
 {
     int s = criaConexao();
@@ -124,18 +125,27 @@ void lsRemoto (int s)
     msg.tipo = LS;
     printf ("Digite os argumentos do ls remoto:\n? ls ");
     int tamargs, i=0, j;
-    char *lsArgs=LerStringDin(&tamargs);
+    char *ls=NULL, *lsArgs=LerStringDin(&tamargs);
+    int tamls=4+tamargs;
+    ls = malloc (4+tamargs);
+    ls[0]='l';
+    ls[1]='s';
+    ls[2]=' ';
+    ls[3]='\0';
+    strcat (ls, lsArgs);
     char *resposta=NULL;
     msg.tamanho=0;
-    while ( (tamargs+1)-i > 0)
+    while ( tamls-i > 0)
     {
         if (msg.tamanho<2)
         {
-            msg.dados[(msg.tamanho)++] = lsArgs[i];
+            msg.dados[(msg.tamanho)++] = ls[i];
             i++;
         }
-        if ((msg.tamanho==2) || ((tamargs+1)-i == 0))
+        if ((msg.tamanho==2) || (tamls-i == 0))
         {
+            if (EhFimTexto(msg.dados))
+                msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
@@ -143,7 +153,7 @@ void lsRemoto (int s)
             bzero (msg.dados,2);
         }
     }
-    i=0;
+/*    i=0;
     j=0;
     do
     {
@@ -153,7 +163,9 @@ void lsRemoto (int s)
         for (j = 0; j < msg.tamanho; j++, i++)
             resposta[i]=msg.dados[j];
     } while (msg.tipo!=FIMTXT);
-    puts (resposta);
+    puts (resposta);*/
+    free (lsArgs);
+    free (ls);
 }
 
 void catLocal()

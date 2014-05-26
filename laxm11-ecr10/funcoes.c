@@ -87,3 +87,10 @@ int pot(int base, int exp) {
         p *= base;
     return p;
 }
+
+int EhFimTexto (char *texto)
+{
+    if ((texto[0]==0) || (texto[1]==0))
+        return 1;
+    return 0;
+}

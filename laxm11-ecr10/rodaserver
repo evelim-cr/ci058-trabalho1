@@ -1,4 +1,6 @@
 #!/bin/bash
-
-make
+if [[ -e server ]]; then
+	rm -fv server
+fi
+make server
 sudo ./server

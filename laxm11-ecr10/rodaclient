@@ -1,4 +1,6 @@
 #!/bin/bash
-
-make
+if [[ -e client ]]; then
+	rm -fv client
+fi
+make client
 sudo ./client

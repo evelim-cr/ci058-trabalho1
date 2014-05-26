@@ -19,3 +19,4 @@ void PressioneEnter ();
 void intTobin(int num, int qtdbits, char *bin);
 int binToint(char *bin, int qtdbits);
 int pot(int base, int exp);
+int EhFimTexto (char *texto);
