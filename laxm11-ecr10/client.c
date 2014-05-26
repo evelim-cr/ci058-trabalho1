@@ -123,8 +123,9 @@ void lsRemoto (int s)
     mensagem_bin msg_bin;
     msg.tipo = LS;
     printf ("Digite os argumentos do ls remoto:\n? ls ");
-    int tamargs, i=0;
+    int tamargs, i=0, j;
     char *lsArgs=LerStringDin(&tamargs);
+    char *resposta=NULL;
     msg.tamanho=0;
     while ( (tamargs+1)-i > 0)
     {
@@ -133,7 +134,7 @@ void lsRemoto (int s)
             msg.dados[(msg.tamanho)++] = lsArgs[i];
             i++;
         }
-        else
+        if ((msg.tamanho==2) || ((tamargs+1)-i == 0))
         {
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
@@ -142,9 +143,17 @@ void lsRemoto (int s)
             bzero (msg.dados,2);
         }
     }
-/*ls [-laR\0] tamargs+1-i=5
-      i     msg.tamanho=2
-            msg.dados="-l"*/
+    i=0;
+    j=0;
+    do
+    {
+        recebe_mensagem_bin(s, &msg_bin);
+        msg = Mensagem_binToMensagem(msg_bin);
+        resposta = realloc(resposta, i+msg.tamanho);
+        for (j = 0; j < msg.tamanho; j++, i++)
+            resposta[i]=msg.dados[j];
+    } while (msg.tipo!=FIMTXT);
+    puts (resposta);
 }
 
 void catLocal()

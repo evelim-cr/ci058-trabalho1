@@ -17,7 +17,7 @@ int main(int argc, char const *argv[])
 		recebe_mensagem_bin(s, &msg_bin);
 		msg = Mensagem_binToMensagem(msg_bin);
 		printf("%d mensagem:\n", i++);
-		for (j=0; i < msg.tamanho; j++)
+		for (j=0; j < msg.tamanho; j++)
 			putchar(msg.dados[j]);
 		bzero (&msg_bin, TAMMSG);
 		bzero (&msg,sizeof(mensagem));
