@@ -5,7 +5,7 @@
 #include "conexao.h"
 
 void lsRemotoServer(int socket, mensagem msg);
-void abreArqEnviaMsgCliente(int s);
+void abreArqEnviaMsgServer(int s, char * path);
 
 int main(int argc, char const *argv[])
 {
@@ -68,15 +68,18 @@ void lsRemotoServer(int socket, mensagem msg)
 	puts (comando);
 	system (comando);
 	//funcao abre o arquivo e envia =)
-	abreArqEnviaMsgCliente(socket);
+	abreArqEnviaMsgServer(socket, "file.tmp");
 }
 
-void abreArqEnviaMsgCliente(int s)
+void abreArqEnviaMsgServer(int s, char * path)
 { 
 	FILE *fp;
 	mensagem msg;
 	mensagem_bin msg_bin; 
-	fp = fopen("file.tmp","r");// Abre o arquivo para leitura
+	fp = fopen(path,"rb");// Abre o arquivo para leitura
+	msg.tamanho=0;
+	msg.tipo=MOSTRA;
+	bzero (msg.dados,2);
 	if (fp == NULL) // se o arquivo nao existir exibe a mensagem de erro.
 	{
 		printf("Houve um erro ao abrir o arquivo\n");
@@ -88,7 +91,9 @@ void abreArqEnviaMsgCliente(int s)
 			if (msg.tamanho<2){
 				fread (&(msg.dados[(msg.tamanho)++]), sizeof(char), 1, fp);
 			}
-			else if(msg.tamanho == 2){
+			if( (msg.tamanho == 2) || (feof(fp)) ){
+				if (feof(fp))
+					msg.tipo=FIMTXT;
 				msg_bin = MensagemToMensagem_bin(msg);
 	            envia_mensagem_bin (s, &msg_bin);
 	            msg.tamanho=0;
