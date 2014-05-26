@@ -1,7 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <strings.h>
 #include "protocolo.h"
 #include "conexao.h"
+
+void lsRemotoServer(int socket, mensagem msg);
 
 int main(int argc, char const *argv[])
 {
@@ -28,37 +31,41 @@ int main(int argc, char const *argv[])
 
 void lsRemotoServer(int socket, mensagem msg)
 {
-	mensagem_bin msg_bin
-	char *comando, *ls;
-	int i=0,j;
-	while (msg.tipo!=FIMTXT)
+	mensagem_bin msg_bin;
+	char *comando=NULL;
+	int i=0, j, acabou=0;
+	while (!acabou)
 	{
-		comando = realloc(comando,i+msg.tamanho)
+		comando = realloc(comando,i+msg.tamanho);
 		for (j=0; j < msg.tamanho; j++, i++)
 		{
 			//printf("[%d]%c", msg.dados[j],msg.dados[j]);
 			comando[i]=msg.dados[j];
 		}
 		bzero (&msg_bin, TAMMSG);
-		recebe_mensagem_bin (s, &msg_bin);
-		msg = Mensagem_binToMensagem(msg_bin);
+		if (msg.tipo==FIMTXT)
+			acabou=1;
+		else
+		{
+			recebe_mensagem_bin (socket, &msg_bin);
+			msg = Mensagem_binToMensagem(msg_bin);
+		}
 	}
-	ls = malloc (3+i+10);
-	ls[0]='l';
-	ls[1]='s';
-	ls[2]=' ';
-	strcat (ls, comando);
-	ls[i+3]=' ';
-	ls[i+3]='>';
-	ls[i+3]='f';
-	ls[i+3]='i';
-	ls[i+3]='l';
-	ls[i+3]='e';
-	ls[i+3]='.';
-	ls[i+3]='t';
-	ls[i+3]='m';
-	ls[i+3]='p';
-	system (ls);
+	comando = realloc (comando, i+10);
+	i--;
+	comando[i++]=' ';
+	comando[i++]='>';
+	comando[i++]='f';
+	comando[i++]='i';
+	comando[i++]='l';
+	comando[i++]='e';
+	comando[i++]='.';
+	comando[i++]='t';
+	comando[i++]='m';
+	comando[i++]='p';
+	comando[i]='\0';
+	puts (comando);
+	system (comando);
 
 	//funcao abre o arquivo e envia =)
 }

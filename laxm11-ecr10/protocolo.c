@@ -51,8 +51,6 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
 
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
-	if (recv (socket, msg_bin, TAMMSG,0)==TAMMSG)
-		puts ("Acho que deu certo...");
-	else
-		puts ("Erro ao enviar mensagem");
+
+	while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "1110")!=0) );
 }
