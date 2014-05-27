@@ -10,6 +10,7 @@ void cdRemoto (int socket, char *path);
 void lsLocal ();
 void lsRemoto (int s);
 void catLocal();
+void catRemoto(int s);
 char *DirAtualLocal(void);
 void exibeMenu();
 
@@ -63,6 +64,7 @@ int main(int argc, char const *argv[])
             }
             case 6: // CAT Remoto
             {
+                catRemoto(s);
                 PressioneEnter();
                 break;
             }
@@ -248,6 +250,55 @@ void catLocal()
         puts ("cat falhou!");
     free (catArgs);
     free (cat);
+}
+
+void catRemoto(int s)
+{
+    mensagem msg;
+    mensagem_bin msg_bin;
+    printf("Digite os argumentos do cat:\n? cat ");
+    int tamargs;
+    char *catArgs=LerStringDin(&tamargs), *resposta;
+    int i=0, j=0, tamcat = 4+strlen(catArgs)+1;
+    char *cat = (char *) malloc (sizeof(char)*tamcat);
+    cat[0] = 'c';
+    cat[1] = 'a';
+    cat[2] = 't';
+    cat[3] = ' ';
+    cat[4] = '\0';
+    cat = strcat(cat, catArgs);
+    while ( tamcat-i > 0)
+    {
+        if (msg.tamanho<2)
+        {
+            msg.dados[(msg.tamanho)++] = cat[i];
+            i++;
+        }
+        if ((msg.tamanho==2) || (tamcat-i == 0))
+        {
+            if (EhFimTexto(msg.dados))
+                msg.tipo=FIMTXT;
+            msg_bin = MensagemToMensagem_bin(msg);
+            envia_mensagem_bin (s, &msg_bin);
+            // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
+            msg.tamanho=0;
+            bzero (msg.dados,2);
+        }
+    }
+    i=0;
+    j=0;
+    do
+    {
+        recebe_mensagem_bin(s, &msg_bin);
+        msg = Mensagem_binToMensagem(msg_bin);
+        resposta = realloc(resposta, i+msg.tamanho);
+        for (j = 0; j < msg.tamanho; j++, i++)
+            resposta[i]= msg.dados[j];
+    } while (msg.tipo!=FIMTXT);
+    puts (resposta);
+    free (catArgs);
+    free (cat);
+    free (resposta);
 }
 
 void exibeMenu(int socket)

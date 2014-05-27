@@ -6,6 +6,7 @@
 
 void cdRemotoServer (int socket, mensagem msg);
 void lsRemotoServer(int socket, mensagem msg);
+void catRemotoServer(int socket, mensagem msg);
 void EnviaDirAtual (int socket, mensagem msg);
 
 int main(int argc, char const *argv[])
@@ -44,6 +45,13 @@ int main(int argc, char const *argv[])
 				cdRemotoServer(s, msg);
 				break;
 			}
+			case CAT:
+			{
+				puts ("\tTipo: CAT");	//log
+				catRemotoServer(s, msg);
+				break;
+			}
+
 		}
 	}
 	return 0;
@@ -88,6 +96,48 @@ void lsRemotoServer(int socket, mensagem msg)
 	puts ("\tResposta armazenada no arquivo 'file.tmp'.");	//log
 	//funcao abre o arquivo e envia =)
 	EnviaArq(socket, "file.tmp");
+	system ("rm -f file.tmp");
+}
+
+void catRemotoServer(int socket, mensagem msg)
+{
+	mensagem_bin msg_bin;
+	char *comando=NULL;
+	int i=0, j, acabou=0, countmsg=1;
+	puts ("\tRecebendo comando 'cat'.");	//log
+	while (!acabou)
+	{
+		comando = realloc(comando,i+msg.tamanho);
+		for (j=0; j < msg.tamanho; j++, i++)
+			comando[i]=msg.dados[j];
+		bzero (&msg_bin, TAMMSG);
+		if (msg.tipo==FIMTXT)
+			acabou=1;
+		else
+		{
+			recebe_mensagem_bin (socket, &msg_bin);
+			msg = Mensagem_binToMensagem(msg_bin);
+			countmsg++;
+		}
+	}
+	printf ("\t[%d mensagens recebidas]\n\tComando recebido: ", countmsg); puts (comando);	//log
+	comando = realloc (comando, i+10);
+	i--;
+	comando[i++]=' ';
+	comando[i++]='>';
+	comando[i++]='f';
+	comando[i++]='i';
+	comando[i++]='l';
+	comando[i++]='e';
+	comando[i++]='.';
+	comando[i++]='t';
+	comando[i++]='m';
+	comando[i++]='p';
+	comando[i]='\0';
+	system (comando);
+	puts ("\tResposta armazenada no arquivo 'file.tmp'.");	//log
+	EnviaArq(socket, "file.tmp");
+	system ("rm -f file.tmp");
 }
 
 void cdRemotoServer (int socket, mensagem msg)
