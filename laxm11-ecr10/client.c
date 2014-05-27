@@ -153,7 +153,7 @@ void lsRemoto (int s)
             bzero (msg.dados,2);
         }
     }
-/*    i=0;
+    i=0;
     j=0;
     do
     {
@@ -161,9 +161,9 @@ void lsRemoto (int s)
         msg = Mensagem_binToMensagem(msg_bin);
         resposta = realloc(resposta, i+msg.tamanho);
         for (j = 0; j < msg.tamanho; j++, i++)
-            resposta[i]=msg.dados[j];
+            resposta[i]=(char) msg.dados[j];
     } while (msg.tipo!=FIMTXT);
-    puts (resposta);*/
+    puts (resposta);
     free (lsArgs);
     free (ls);
 }

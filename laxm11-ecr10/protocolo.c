@@ -44,7 +44,7 @@ void recebe_string (int socket, char *string)
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
 	if (write (socket, msg_bin, TAMMSG)==TAMMSG)
-		puts ("Acho que deu certo...");
+		puts ("Mensagem enviada.");
 	else
 		puts ("Erro ao enviar mensagem");
 }
@@ -53,4 +53,5 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
 
 	while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "1110")!=0) );
+	//puts ("Mensagem recebida.");
 }
