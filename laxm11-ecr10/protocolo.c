@@ -43,21 +43,27 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 }
 
 void EnviaArq(int s, char * path)
-{ 
+{
     FILE *fp;
     mensagem msg;
-    mensagem_bin msg_bin; 
+    mensagem_bin msg_bin;
+    puts ("\tAbrindo arquivo para envio.");	//log
     fp = fopen(path,"rb");// Abre o arquivo para leitura
+    fseek(fp, 0L, SEEK_END);
+    int tamfp = ftell(fp);	// fazer barra de progresso
+    int i=0;
+    rewind (fp);
     msg.tamanho=0;
     msg.tipo=MOSTRA;
     bzero (msg.dados,2);
     if (fp == NULL) // se o arquivo nao existir exibe a mensagem de erro.
     {
-        printf("Houve um erro ao abrir o arquivo\n");
+        printf("\tHouve um erro ao abrir o arquivo\n");	//log
         exit(1);
     }
     else
     {
+    	puts ("\tInicio da transferencia do arquivo.");	//log
         while (!feof(fp))
         {
             if (msg.tamanho<2)
@@ -67,10 +73,12 @@ void EnviaArq(int s, char * path)
                     msg.tipo=FIMTXT;
                 msg_bin = MensagemToMensagem_bin(msg);
                 envia_mensagem_bin (s, &msg_bin);
+                i++;
                 msg.tamanho=0;
                 bzero (msg.dados,2);
             }
         }
+        printf ("\t[%d mensagens enviadas]\n\tFim da transferencia do arquivo.\n", i);	//log
     }
     fclose(fp); 
 }

@@ -15,25 +15,34 @@ int main(int argc, char const *argv[])
 	bzero (&msg,sizeof(mensagem));
 	mensagem_bin msg_bin;
 	bzero (&msg_bin, TAMMSG);
+	system("clear");
 	while(1)
 	{
+		puts ("----------------------");
+		puts ("Aguardando mensagem...");	//log
 		recebe_mensagem_bin(s, &msg_bin);
 		msg = Mensagem_binToMensagem(msg_bin);
+		puts ("----------------------");
+		puts ("Mensagem Recebida!");	//log
 		switch (msg.tipo)
 		{
 			case LS:
 			{
+				puts ("\tTipo: LS");	//log
 				lsRemotoServer(s, msg);
 				break;
 			}
 			case DIR_ATUAL:
 			{
+				puts ("\tTipo: DIR_ATUAL");	//log
 				EnviaDirAtual(s, msg);
 				break;
 			}
 			case CD:
 			{
+				puts ("\tTipo: CD");	//log
 				cdRemotoServer(s, msg);
+				break;
 			}
 		}
 	}
@@ -44,7 +53,8 @@ void lsRemotoServer(int socket, mensagem msg)
 {
 	mensagem_bin msg_bin;
 	char *comando=NULL;
-	int i=0, j, acabou=0;
+	int i=0, j, acabou=0, countmsg=1;
+	puts ("\tRecebendo comando 'ls'.");	//log
 	while (!acabou)
 	{
 		comando = realloc(comando,i+msg.tamanho);
@@ -57,9 +67,10 @@ void lsRemotoServer(int socket, mensagem msg)
 		{
 			recebe_mensagem_bin (socket, &msg_bin);
 			msg = Mensagem_binToMensagem(msg_bin);
+			countmsg++;
 		}
 	}
-	puts (comando);
+	printf ("\t[%d mensagens recebidas]\n\tComando recebido: ", countmsg); puts (comando);	//log
 	comando = realloc (comando, i+10);
 	i--;
 	comando[i++]=' ';
@@ -74,6 +85,7 @@ void lsRemotoServer(int socket, mensagem msg)
 	comando[i++]='p';
 	comando[i]='\0';
 	system (comando);
+	puts ("\tResposta armazenada no arquivo 'file.tmp'.");	//log
 	//funcao abre o arquivo e envia =)
 	EnviaArq(socket, "file.tmp");
 }
@@ -82,7 +94,8 @@ void cdRemotoServer (int socket, mensagem msg)
 {
 	mensagem_bin msg_bin;
 	char *dir=NULL;
-	int i=0, j, acabou=0;
+	int i=0, j, acabou=0, countmsg=1;
+	puts ("\tRecebendo comando 'cd'.");	//log
 	while (!acabou)
 	{
 		dir = realloc(dir,i+msg.tamanho);
@@ -95,18 +108,26 @@ void cdRemotoServer (int socket, mensagem msg)
 		{
 			recebe_mensagem_bin (socket, &msg_bin);
 			msg = Mensagem_binToMensagem(msg_bin);
+			countmsg++;
 		}
 	}
-	printf ("cd "); puts(dir);
+	printf ("\t[%d mensagens recebidas]\n\tComando recebido: cd ", countmsg); puts(dir);	//log
 	int enviar = chdir(dir);
 	if (enviar)
+	{
+    	puts ("\tEnviando mensagem de erro.");	//log
 		msg.tipo=ERRO;
+	}
 	else
+	{
+    	puts ("\tEnviando mensagem de sucesso.");	//log
 		msg.tipo=SUCESSO;
+	}
 	msg.tamanho=1;
 	msg.dados[0]=enviar;
 	msg_bin = MensagemToMensagem_bin(msg);
 	envia_mensagem_bin (socket, &msg_bin);
+	puts ("\tPronto!");	//log
 }
 
 void EnviaDirAtual (int socket, mensagem msg)
@@ -116,10 +137,16 @@ void EnviaDirAtual (int socket, mensagem msg)
     dir = (char *) (long int) get_current_dir_name();
     char *enviar;
     if (dir==0)
+    {
+    	puts ("\tEnviando mensagem de erro.");	//log
         enviar = erro;
+    }
     else
+    {
+    	puts ("\tEnviando Diretorio Atual.");	//log
     	enviar = dir;
-    int i=0, tamenviar = strlen(enviar)+1;
+    }
+    int i=0, tamenviar = strlen(enviar)+1, countmsg=1;
     msg.tipo=MOSTRA;
     msg.tamanho=0;
     while ( tamenviar-i > 0)
@@ -135,9 +162,14 @@ void EnviaDirAtual (int socket, mensagem msg)
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (socket, &msg_bin);
+            countmsg++;
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
             bzero (msg.dados,2);
         }
     }
+    if (dir==0)
+    	printf("\t[%d mensagens enviadas]\n\tMensagem de erro enviada.\n", countmsg);	//log
+    else
+    	printf("\t[%d mensagens enviadas]\n\tDiretorio atual enviado.\n", countmsg);	//log
 }
