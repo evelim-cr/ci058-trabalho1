@@ -38,8 +38,6 @@ typedef struct
 
 mensagem_bin MensagemToMensagem_bin (mensagem msg);
 mensagem Mensagem_binToMensagem (mensagem_bin msg_bin);
-void envia_string (int socket, char *string);
-void recebe_string (int socket, char *string);
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void EnviaArq(int s, char * path);

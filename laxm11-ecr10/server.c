@@ -4,6 +4,7 @@
 #include "protocolo.h"
 #include "conexao.h"
 
+void cdRemotoServer (int socket, mensagem msg);
 void lsRemotoServer(int socket, mensagem msg);
 void EnviaDirAtual (int socket, mensagem msg);
 
@@ -29,6 +30,10 @@ int main(int argc, char const *argv[])
 			{
 				EnviaDirAtual(s, msg);
 				break;
+			}
+			case CD:
+			{
+				cdRemotoServer(s, msg);
 			}
 		}
 	}
@@ -71,6 +76,36 @@ void lsRemotoServer(int socket, mensagem msg)
 	system (comando);
 	//funcao abre o arquivo e envia =)
 	EnviaArq(socket, "file.tmp");
+}
+
+void cdRemotoServer (int socket, mensagem msg)
+{
+	mensagem_bin msg_bin;
+	char *dir=NULL;
+	int i=0, j, acabou=0;
+	while (!acabou)
+	{
+		dir = realloc(dir,i+msg.tamanho);
+		for (j=0; j < msg.tamanho; j++, i++)
+			dir[i]=msg.dados[j];
+		bzero (&msg_bin, TAMMSG);
+		if (msg.tipo==FIMTXT)
+			acabou=1;
+		else
+		{
+			recebe_mensagem_bin (socket, &msg_bin);
+			msg = Mensagem_binToMensagem(msg_bin);
+		}
+	}
+	int enviar = chdir(dir);
+	if (enviar)
+		msg.tipo=ERRO;
+	else
+		msg.tipo=SUCESSO;
+	msg.tamanho=1;
+	msg.dados[0]=enviar;
+	msg_bin = MensagemToMensagem_bin(msg);
+	envia_mensagem_bin (socket, &msg_bin);
 }
 
 void EnviaDirAtual (int socket, mensagem msg)

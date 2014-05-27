@@ -6,6 +6,7 @@
 #include "funcoes.h"
 
 void cdLocal (char *path);
+void cdRemoto (int socket, char *path);
 void lsLocal ();
 void lsRemoto (int s);
 void catLocal();
@@ -47,6 +48,10 @@ int main(int argc, char const *argv[])
             }
             case 4: // CD Remoto
             {
+                printf ("Digite o caminho para o diretorio:\n? cd ");
+                char *path=LerStringDin(&tamStr);
+                cdRemoto (s, path);
+                free (path);
                 PressioneEnter();
                 break;
             }
@@ -86,6 +91,43 @@ void cdLocal (char *path)
         printf(RED "Mudanca de diretorio falhou!\n" NRM);
         PressioneEnter();
     }
+}
+
+void cdRemoto (int socket, char *path)
+{
+    mensagem msg;
+    mensagem_bin msg_bin;
+    int i=0, j;
+    msg.tipo = CD;
+    msg.tamanho = 0;
+    int tampath = strlen(path)+1;
+    while ( tampath-i > 0)
+    {
+        if (msg.tamanho<2)
+        {
+            msg.dados[(msg.tamanho)++] = path[i];
+            i++;
+        }
+        if ((msg.tamanho==2) || (tampath-i == 0))
+        {
+            if (EhFimTexto(msg.dados))
+                msg.tipo=FIMTXT;
+            msg_bin = MensagemToMensagem_bin(msg);
+            envia_mensagem_bin (socket, &msg_bin);
+            // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
+            msg.tamanho=0;
+            bzero (msg.dados,2);
+        }
+    }
+    recebe_mensagem_bin(socket, &msg_bin);
+    msg = Mensagem_binToMensagem(msg_bin);
+    int resposta = (int) msg.dados[0];  //ou atoi
+    if (resposta)
+    {
+        printf(RED "Mudanca de diretorio falhou!\n" NRM);
+        PressioneEnter();
+    }
+
 }
 
 char *DirAtualLocal(void)
