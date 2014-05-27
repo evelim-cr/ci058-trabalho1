@@ -10,7 +10,7 @@ typedef struct
 	char sequencia[4];
 	char tipo[4];
 	char erro[4];
-	char dados[16];
+	char dados[2];
 } mensagem_bin;
 
 typedef struct
@@ -20,7 +20,7 @@ typedef struct
 	char dados[2];
 } mensagem;
 
-#define TAMMSG 40
+#define TAMMSG 26
 #define CD 0
 #define LS 1
 #define PUT 2
@@ -41,3 +41,4 @@ void envia_string (int socket, char *string);
 void recebe_string (int socket, char *string);
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);
+void EnviaArq(int s, char * path);
