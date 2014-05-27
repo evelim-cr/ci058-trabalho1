@@ -31,9 +31,7 @@ mensagem Mensagem_binToMensagem (mensagem_bin msg_bin)
 
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
-	if (write (socket, msg_bin, TAMMSG)==TAMMSG)
-		puts ("Mensagem enviada.");
-	else
+	if (send (socket, msg_bin, TAMMSG,0)!=TAMMSG)
 		puts ("Erro ao enviar mensagem");
 }
 

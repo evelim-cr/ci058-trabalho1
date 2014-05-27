@@ -59,6 +59,7 @@ void lsRemotoServer(int socket, mensagem msg)
 			msg = Mensagem_binToMensagem(msg_bin);
 		}
 	}
+	puts (comando);
 	comando = realloc (comando, i+10);
 	i--;
 	comando[i++]=' ';
@@ -72,7 +73,6 @@ void lsRemotoServer(int socket, mensagem msg)
 	comando[i++]='m';
 	comando[i++]='p';
 	comando[i]='\0';
-	puts (comando);
 	system (comando);
 	//funcao abre o arquivo e envia =)
 	EnviaArq(socket, "file.tmp");
@@ -97,6 +97,7 @@ void cdRemotoServer (int socket, mensagem msg)
 			msg = Mensagem_binToMensagem(msg_bin);
 		}
 	}
+	printf ("cd "); puts(dir);
 	int enviar = chdir(dir);
 	if (enviar)
 		msg.tipo=ERRO;
@@ -118,7 +119,7 @@ void EnviaDirAtual (int socket, mensagem msg)
         enviar = erro;
     else
     	enviar = dir;
-    int i, tamenviar = strlen(enviar)+1;
+    int i=0, tamenviar = strlen(enviar)+1;
     msg.tipo=MOSTRA;
     msg.tamanho=0;
     while ( tamenviar-i > 0)

@@ -142,19 +142,21 @@ char *DirAtualLocal(void)
 char *DirAtualRemoto(int socket)
 {
     int i=0, j;
-    char *dir;
+    char *dir=NULL;
     mensagem msg;
     mensagem_bin msg_bin;
     msg.tipo = DIR_ATUAL;
     msg.tamanho = 0;
     bzero (msg.dados, 2);
+    msg_bin = MensagemToMensagem_bin(msg);
+    envia_mensagem_bin (socket, &msg_bin);
     do
     {
         recebe_mensagem_bin(socket, &msg_bin);
         msg = Mensagem_binToMensagem(msg_bin);
         dir = realloc(dir, i+msg.tamanho);
         for (j = 0; j < msg.tamanho; j++, i++)
-            dir[i]=(char) msg.dados[j];
+            dir[i]= msg.dados[j];
     } while (msg.tipo!=FIMTXT);
     return dir;
 }
@@ -222,7 +224,7 @@ void lsRemoto (int s)
         msg = Mensagem_binToMensagem(msg_bin);
         resposta = realloc(resposta, i+msg.tamanho);
         for (j = 0; j < msg.tamanho; j++, i++)
-            resposta[i]=(char) msg.dados[j];
+            resposta[i]= msg.dados[j];
     } while (msg.tipo!=FIMTXT);
     puts (resposta);
     free (lsArgs);
@@ -252,7 +254,7 @@ void exibeMenu(int socket)
 {
     system ("clear");
     printf(YEL "Diretório Local: "); puts (DirAtualLocal()); printf(NRM);
-    printf(YEL "Diretório Remoto: "); puts (DirAtualRemoto(socket)); printf(NRM);
+//    printf(YEL "Diretório Remoto: "); puts (DirAtualRemoto(socket)); printf(NRM);
     printf
         (BLU "\t+-----------"YEL"Client"BLU"----------+\n"
          BLU "\t|                           |\n" NRM
