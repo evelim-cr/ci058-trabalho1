@@ -26,6 +26,7 @@ typedef struct
 #define PUT 2
 #define GET 3
 #define CAT 4
+#define DIR_ATUAL 5
 #define DADOS 7
 #define TAMARQ 8
 #define MOSTRA 9

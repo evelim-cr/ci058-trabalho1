@@ -5,6 +5,7 @@
 #include "conexao.h"
 
 void lsRemotoServer(int socket, mensagem msg);
+void EnviaDirAtual (int socket, mensagem msg);
 
 int main(int argc, char const *argv[])
 {
@@ -22,6 +23,11 @@ int main(int argc, char const *argv[])
 			case LS:
 			{
 				lsRemotoServer(s, msg);
+				break;
+			}
+			case DIR_ATUAL:
+			{
+				EnviaDirAtual(s, msg);
 				break;
 			}
 		}
@@ -65,4 +71,37 @@ void lsRemotoServer(int socket, mensagem msg)
 	system (comando);
 	//funcao abre o arquivo e envia =)
 	EnviaArq(socket, "file.tmp");
+}
+
+void EnviaDirAtual (int socket, mensagem msg)
+{
+	mensagem_bin msg_bin;
+	char *dir; char erro[]="Nao foi possivel localizar o diretorio atual.";
+    dir = (char *) (long int) get_current_dir_name();
+    char *enviar;
+    if (dir==0)
+        enviar = erro;
+    else
+    	enviar = dir;
+    int i, tamenviar = strlen(enviar)+1;
+    msg.tipo=MOSTRA;
+    msg.tamanho=0;
+    while ( tamenviar-i > 0)
+    {
+        if (msg.tamanho<2)
+        {
+            msg.dados[(msg.tamanho)++] = enviar[i];
+            i++;
+        }
+        if ((msg.tamanho==2) || (tamenviar-i == 0))
+        {
+            if (EhFimTexto(msg.dados))
+                msg.tipo=FIMTXT;
+            msg_bin = MensagemToMensagem_bin(msg);
+            envia_mensagem_bin (socket, &msg_bin);
+            // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
+            msg.tamanho=0;
+            bzero (msg.dados,2);
+        }
+    }
 }
