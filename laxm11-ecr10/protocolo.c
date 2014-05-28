@@ -65,29 +65,21 @@ void EnviaArq(int s, char * path)
     msg.tamanho=0;
     msg.tipo=MOSTRA;
     bzero (msg.dados,2);
-    if (fp == NULL) // se o arquivo nao existir exibe a mensagem de erro.
+	puts ("\tInicio da transferencia do arquivo.");	//log
+    while (!feof(fp))
     {
-        printf("\tHouve um erro ao abrir o arquivo\n");	//log
-        exit(1);
-    }
-    else
-    {
-    	puts ("\tInicio da transferencia do arquivo.");	//log
-        while (!feof(fp))
-        {
-            if (msg.tamanho<2)
-                fread (&(msg.dados[(msg.tamanho)++]), sizeof(char), 1, fp);
-            if( (msg.tamanho == 2) || (feof(fp)) ){
-                if (feof(fp))
-                    msg.tipo=FIMTXT;
-                msg_bin = MensagemToMensagem_bin(msg);
-                envia_mensagem_bin (s, &msg_bin);
-                i++;
-                msg.tamanho=0;
-                bzero (msg.dados,2);
-            }
+        if (msg.tamanho<2)
+            fread (&(msg.dados[(msg.tamanho)++]), sizeof(char), 1, fp);
+        if( (msg.tamanho == 2) || (feof(fp)) ){
+            if (feof(fp))
+                msg.tipo=FIMTXT;
+            msg_bin = MensagemToMensagem_bin(msg);
+            envia_mensagem_bin (s, &msg_bin);
+            i++;
+            msg.tamanho=0;
+            bzero (msg.dados,2);
         }
-        printf ("\t[%d mensagens enviadas]\n\tFim da transferencia do arquivo.\n", i);	//log
     }
+    printf ("\t[%d mensagens enviadas]\n\tFim da transferencia do arquivo.\n", i);	//log
     fclose(fp); 
 }

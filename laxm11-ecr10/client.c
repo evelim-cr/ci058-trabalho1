@@ -70,6 +70,7 @@ int main(int argc, char const *argv[])
             }
             case 7: // GET
             {
+                get(s);
                 PressioneEnter();
                 break;
             }
@@ -318,14 +319,14 @@ void get(int s)
     int i=0;
     msg.tipo = GET;
     msg.tamanho = 0;
-    while ( tamfilename-i > 0)
+    while ( tamfilename-i+1 > 0)
     {
         if (msg.tamanho<2)
         {
             msg.dados[(msg.tamanho)++] = filename[i];
             i++;
         }
-        if ((msg.tamanho==2) || (tamfilename-i == 0))
+        if ((msg.tamanho==2) || (tamfilename-i+1 == 0))
         {
             if (EhFimTexto(msg.dados))
                 msg.tipo=FIMTXT;
@@ -345,13 +346,13 @@ void get(int s)
         {
             printf ("Erro ao abrir ou criar o arquivo "); puts (filename);
         }
-        do
+        while (msg.tipo!=FIMTXT)
         {
-            recebe_mensagem_bin(s, &msg_bin);
-            msg = Mensagem_binToMensagem(msg_bin);
             if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
                 puts ("Erro na escrita em arquivo.");
-        } while (msg.tipo!=FIMTXT);
+            recebe_mensagem_bin(s, &msg_bin);
+            msg = Mensagem_binToMensagem(msg_bin);
+        }
         puts ("Arquivo copiado com sucesso.");
         fclose (dest);
     }
