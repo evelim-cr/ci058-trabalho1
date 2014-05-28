@@ -7,6 +7,7 @@
 void cdRemotoServer (int socket, mensagem msg);
 void lsRemotoServer(int socket, mensagem msg);
 void catRemotoServer(int socket, mensagem msg);
+void getServer(int socket, mensagem msg);
 void EnviaDirAtual (int socket, mensagem msg);
 
 int main(int argc, char const *argv[])
@@ -49,6 +50,12 @@ int main(int argc, char const *argv[])
 			{
 				puts ("\tTipo: CAT");	//log
 				catRemotoServer(s, msg);
+				break;
+			}
+			case GET:
+			{
+				puts ("\tTipo: GET");	//log
+				getServer(s, msg);
 				break;
 			}
 
@@ -138,6 +145,32 @@ void catRemotoServer(int socket, mensagem msg)
 	puts ("\tResposta armazenada no arquivo 'file.tmp'.");	//log
 	EnviaArq(socket, "file.tmp");
 	system ("rm -f file.tmp");
+}
+
+void getServer (int socket, mensagem msg)
+{
+	mensagem_bin msg_bin;
+	char *filename=NULL;
+	FILE *fp;
+	int i=0, j, acabou=0, countmsg=0;
+	puts ("\tRecebendo nome do arquivo.");	//log
+	while (!acabou)
+	{
+		filename = realloc(filename,i+msg.tamanho);
+		for (j=0; j < msg.tamanho; j++, i++)
+			filename[i]=msg.dados[j];
+		bzero (&msg_bin, TAMMSG);
+		if (msg.tipo==FIMTXT)
+			acabou=1;
+		else
+		{
+			recebe_mensagem_bin (socket, &msg_bin);
+			msg = Mensagem_binToMensagem(msg_bin);
+			countmsg++;
+		}
+	}
+	printf ("\t[%d mensagens recebidas]\n\tArquivo requisitado: ", countmsg); puts (filename);	//log
+	EnviaArq (socket, filename);
 }
 
 void cdRemotoServer (int socket, mensagem msg)

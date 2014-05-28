@@ -48,7 +48,16 @@ void EnviaArq(int s, char * path)
     mensagem msg;
     mensagem_bin msg_bin;
     puts ("\tAbrindo arquivo para envio.");	//log
-    fp = fopen(path,"rb");// Abre o arquivo para leitura
+    if ((fp = fopen (path,"rb"))==NULL)
+    {
+        printf ("\tArquivo nao existe.\n");	//log
+        msg.tipo=ERRO;
+        msg.tamanho=0;
+        bzero (msg.dados,2);
+        msg_bin = MensagemToMensagem_bin(msg);
+        envia_mensagem_bin (s, &msg_bin);
+        return;
+    }
     fseek(fp, 0L, SEEK_END);
     int tamfp = ftell(fp);	// fazer barra de progresso
     int i=0;

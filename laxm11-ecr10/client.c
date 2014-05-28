@@ -12,7 +12,7 @@ void lsRemoto (int s);
 void catLocal();
 void catRemoto(int s);
 char *DirAtualLocal(void);
-void exibeMenu();
+void exibeMenu(int s);
 
 
 
@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
     int s = criaConexao();
     int tamStr;
     // FILE *infile = fopen ("teste.txt","r");
-    exibeMenu();
+    exibeMenu(s);
     int op=LeOpcao(1,9);
     while (op!=9)
     {
@@ -79,7 +79,7 @@ int main(int argc, char const *argv[])
                 break;
             }
         }
-        exibeMenu();
+        exibeMenu(s);
         op=LeOpcao(1,9);
     }
     // fclose (infile);
@@ -258,7 +258,7 @@ void catRemoto(int s)
     mensagem_bin msg_bin;
     printf("Digite os argumentos do cat:\n? cat ");
     int tamargs;
-    char *catArgs=LerStringDin(&tamargs), *resposta;
+    char *catArgs=LerStringDin(&tamargs), *resposta=NULL;
     int i=0, j=0, tamcat = 4+strlen(catArgs)+1;
     char *cat = (char *) malloc (sizeof(char)*tamcat);
     cat[0] = 'c';
@@ -267,6 +267,8 @@ void catRemoto(int s)
     cat[3] = ' ';
     cat[4] = '\0';
     cat = strcat(cat, catArgs);
+    msg.tipo = CAT;
+    msg.tamanho = 0;
     while ( tamcat-i > 0)
     {
         if (msg.tamanho<2)
@@ -301,11 +303,69 @@ void catRemoto(int s)
     free (resposta);
 }
 
+void get(int s)
+{
+    mensagem msg;
+    mensagem_bin msg_bin;
+    msg.tipo = GET;
+    msg.tamanho = 0;
+    bzero (msg.dados, 2);
+    msg_bin = MensagemToMensagem_bin(msg);
+    envia_mensagem_bin (s, &msg_bin);
+    printf("Digite o nome do arquivo:\n? ");
+    int tamfilename;
+    char *filename=LerStringDin(&tamfilename);
+    int i=0;
+    msg.tipo = GET;
+    msg.tamanho = 0;
+    while ( tamfilename-i > 0)
+    {
+        if (msg.tamanho<2)
+        {
+            msg.dados[(msg.tamanho)++] = filename[i];
+            i++;
+        }
+        if ((msg.tamanho==2) || (tamfilename-i == 0))
+        {
+            if (EhFimTexto(msg.dados))
+                msg.tipo=FIMTXT;
+            msg_bin = MensagemToMensagem_bin(msg);
+            envia_mensagem_bin (s, &msg_bin);
+            // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
+            msg.tamanho=0;
+            bzero (msg.dados,2);
+        }
+    }
+    recebe_mensagem_bin(s, &msg_bin);
+    msg = Mensagem_binToMensagem(msg_bin);
+    FILE *dest;
+    if (msg.tipo!=ERRO)
+    {
+        if ((dest = fopen (filename,"w+b"))==NULL)
+        {
+            printf ("Erro ao abrir ou criar o arquivo "); puts (filename);
+        }
+        do
+        {
+            recebe_mensagem_bin(s, &msg_bin);
+            msg = Mensagem_binToMensagem(msg_bin);
+            if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
+                puts ("Erro na escrita em arquivo.");
+        } while (msg.tipo!=FIMTXT);
+        puts ("Arquivo copiado com sucesso.");
+        fclose (dest);
+    }
+    else
+        puts ("Erro ao receber arquivo.");
+    free (filename);
+    // free (cat);
+}
+
 void exibeMenu(int socket)
 {
     system ("clear");
     printf(YEL "Diretório Local: "); puts (DirAtualLocal()); printf(NRM);
-//    printf(YEL "Diretório Remoto: "); puts (DirAtualRemoto(socket)); printf(NRM);
+    printf(YEL "Diretório Remoto: "); puts (DirAtualRemoto(socket)); printf(NRM);
     printf
         (BLU "\t+-----------"YEL"Client"BLU"----------+\n"
          BLU "\t|                           |\n" NRM
