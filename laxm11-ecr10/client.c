@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <strings.h>
+#include "sys/stat.h"
 #include "conexao.h"
 #include "protocolo.h"
 #include "funcoes.h"
@@ -11,6 +12,7 @@ void lsLocal ();
 void lsRemoto (int s);
 void catLocal();
 void catRemoto(int s);
+void get(int s);
 char *DirAtualLocal(void);
 void exibeMenu(int s);
 
@@ -342,6 +344,11 @@ void get(int s)
     FILE *dest;
     if (msg.tipo!=ERRO)
     {
+        if (msg.tipo==TAMARQ)
+            printf("Tamanho do arquivo: %uB.\n", msg.dados[0]);
+        
+        recebe_mensagem_bin(s, &msg_bin);
+        msg = Mensagem_binToMensagem(msg_bin);
         if ((dest = fopen (filename,"w+b"))==NULL)
         {
             printf ("Erro ao abrir ou criar o arquivo "); puts (filename);
@@ -354,12 +361,13 @@ void get(int s)
             msg = Mensagem_binToMensagem(msg_bin);
         }
         puts ("Arquivo copiado com sucesso.");
+        char mode[] = "0777";
+        chmod (filename,strtol(mode, 0, 8));
         fclose (dest);
     }
     else
         puts ("Erro ao receber arquivo.");
     free (filename);
-    // free (cat);
 }
 
 void exibeMenu(int socket)

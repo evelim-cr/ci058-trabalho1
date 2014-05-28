@@ -42,7 +42,7 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 	//puts ("Mensagem recebida.");
 }
 
-void EnviaArq(int s, char * path)
+void EnviaArq(int s, char * path, int type)
 {
     FILE *fp;
     mensagem msg;
@@ -58,13 +58,25 @@ void EnviaArq(int s, char * path)
         envia_mensagem_bin (s, &msg_bin);
         return;
     }
-    fseek(fp, 0L, SEEK_END);
-    int tamfp = ftell(fp);	// fazer barra de progresso
-    int i=0;
-    rewind (fp);
-    msg.tamanho=0;
+
+    if ( (type==GET) || (type==PUT) )
+    {
+	    fseek(fp, 0L, SEEK_END);
+	    unsigned int tamfp = ftell(fp);	// fazer barra de progresso
+	    int i=0;
+	    rewind (fp);
+	    msg.tipo = TAMARQ;
+	    msg.tamanho = 1;
+	    msg.dados[0] = tamfp;
+	    msg_bin = MensagemToMensagem_bin(msg);
+	    envia_mensagem_bin(s, &msg_bin);
+	    printf("\tTamanho do arquivo: %uB.\n", tamfp);
+    }
+
     msg.tipo=MOSTRA;
+    msg.tamanho=0;
     bzero (msg.dados,2);
+    int i=0;
 	puts ("\tInicio da transferencia do arquivo.");	//log
     while (!feof(fp))
     {

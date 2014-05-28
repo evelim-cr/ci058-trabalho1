@@ -102,7 +102,7 @@ void lsRemotoServer(int socket, mensagem msg)
 	system (comando);
 	puts ("\tResposta armazenada no arquivo 'file.tmp'.");	//log
 	//funcao abre o arquivo e envia =)
-	EnviaArq(socket, "file.tmp");
+	EnviaArq(socket, "file.tmp", LS);
 	system ("rm -f file.tmp");
 }
 
@@ -143,7 +143,7 @@ void catRemotoServer(int socket, mensagem msg)
 	comando[i]='\0';
 	system (comando);
 	puts ("\tResposta armazenada no arquivo 'file.tmp'.");	//log
-	EnviaArq(socket, "file.tmp");
+	EnviaArq(socket, "file.tmp", CAT);
 	system ("rm -f file.tmp");
 }
 
@@ -170,7 +170,7 @@ void getServer (int socket, mensagem msg)
 		}
 	}
 	printf ("\t[%d mensagens recebidas]\n\tArquivo requisitado: ", countmsg); puts (filename);	//log
-	EnviaArq (socket, filename);
+	EnviaArq (socket, filename, GET);
 }
 
 void cdRemotoServer (int socket, mensagem msg)
