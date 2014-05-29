@@ -6,7 +6,7 @@ mensagem_bin MensagemToMensagem_bin (mensagem msg)
 	mensagem_bin mbin;
 	strcpy (mbin.inicio,"11101110");
 	intTobin(msg.tamanho,4,mbin.tamanho);
-    bzero (msg.sequencia,4);
+    bzero (mbin.sequencia,4);
 	intTobin(msg.tipo, 4, mbin.tipo);
 	// mbin.dados[0]=msg.dados[0];
 	// mbin.dados[1]=msg.dados[1];
@@ -109,18 +109,18 @@ void InsereParidade (mensagem_bin msg_bin)
             conta1[1]++;
         if (msg_bin.sequencia[i]==1)    //soma 1's presentes na sequencia
             conta1[2]++;
-        if (msg_bin.dados[i])==1)       //soma 1's presentes nos dados (nao todos)
+        if (msg_bin.dados[i]==1)       //soma 1's presentes nos dados (nao todos)
             conta1[3]++;
     }
     for (i = 0; i < 3; i++)             //insere bit de paridade do tamanho, tipo e sequencia
-        if (!EhImpar(conta1[i])
+        if (!EhImpar(conta1[i]))
             msg_bin.erro[i]=1;
 
     for (i = 4; i<16; i++)              //soma 1's restantes nos dados.
-        if (msg_bin.dados[i])==1)
+        if (msg_bin.dados[i]==1)
             conta1[3]++;
 
-    if (!EhImpar(conta1[3])             //insere bit de paridade dos dados
+    if (!EhImpar(conta1[3]))             //insere bit de paridade dos dados
         msg_bin.erro[3] = 1;
 }
 
@@ -140,18 +140,18 @@ int TemErro (mensagem_bin msg_bin)
             conta1[1]++;
         if (msg_bin.sequencia[i]==1)    //soma 1's presentes na sequencia
             conta1[2]++;
-        if (msg_bin.dados[i])==1)       //soma 1's presentes nos dados (nao todos)
+        if (msg_bin.dados[i]==1)       //soma 1's presentes nos dados (nao todos)
             conta1[3]++;
     }
     for (i = 0; i < 3; i++)
-        if (!EhImpar(conta1[i])         //detecta erro no tamanho, tipo e sequencia
+        if (!EhImpar(conta1[i]))         //detecta erro no tamanho, tipo e sequencia
             return 1;
 
     for (i = 4; i<16; i++)
-        if (msg_bin.dados[i])==1)       //soma restante dos 1's
+        if (msg_bin.dados[i]==1)       //soma restante dos 1's
             conta1[3]++;
 
-    if (!EhImpar(conta1[3])             //detecta erro nos dados
+    if (!EhImpar(conta1[3]))             //detecta erro nos dados
         return 1;
     return 0;                           //nao tem erro
 }

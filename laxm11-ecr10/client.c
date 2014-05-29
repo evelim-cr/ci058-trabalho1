@@ -400,11 +400,11 @@ void put(int s)
             bzero (msg.dados,2);
         }
     }
-    recebe_mensagem_bin (socket, &msg_bin);
+    recebe_mensagem_bin (s, &msg_bin);
     msg = Mensagem_binToMensagem(msg_bin);
     if (msg.tipo == SUCESSO)
-        EnviaArq (socket, filename, PUT);
-    recebe_mensagem_bin (socket, &msg_bin);
+        EnviaArq (s, filename, PUT);
+    recebe_mensagem_bin (s, &msg_bin);
     msg = Mensagem_binToMensagem(msg_bin);
     if (msg.tipo == SUCESSO){
     //
