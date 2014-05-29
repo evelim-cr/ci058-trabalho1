@@ -61,7 +61,7 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
                 msg.tamanho=0;
                 bzero(msg.dados,2);
                 acknack = MensagemToMensagem_bin(msg);
-                envia_mensagem_bin (socket, &acknack);
+                envia_acknack (socket, &acknack);
             }
             else
             {
@@ -69,11 +69,17 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
                 msg.tamanho=0;
                 bzero(msg.dados,2);
                 acknack = MensagemToMensagem_bin(msg);
-                envia_mensagem_bin (socket, &acknack);
+                envia_acknack (socket, &acknack);
                 break;
             }
         }
     }
+}
+
+void envia_acknack (int socket, mensagem_bin *acknack)
+{
+    if (send (socket, acknack, TAMMSG,0)!=TAMMSG)
+            puts ("Erro ao enviar ACK ou NACK");
 }
 
 void EnviaArq(int s, unsigned char * path, int type)

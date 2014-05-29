@@ -50,3 +50,4 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void EnviaArq(int s, unsigned char * path, int type);
 void InsereParidade (mensagem_bin *msg_bin);
 int TemErro (mensagem_bin msg_bin);
+void envia_acknack (int socket, mensagem_bin *acknack);
