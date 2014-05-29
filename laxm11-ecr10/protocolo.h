@@ -3,14 +3,21 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#define TAMINICIOBIN 8
+#define TAMTAMANHOBIN 4
+#define TAMSEQUENCIABIN 4
+#define TAMTIPOBIN 4
+#define TAMERROBIN 4
+#define TAMDADOSBIN 16
+
 typedef struct
 {
-	char inicio[8];
-	char tamanho[4];
-	char sequencia[4];
-	char tipo[4];
-	char erro[4];
-	char dados[2];
+	char inicio[TAMINICIOBIN];
+	char tamanho[TAMTAMANHOBIN];
+	char sequencia[TAMSEQUENCIABIN];
+	char tipo[TAMTIPOBIN];
+	char erro[TAMERROBIN];
+	char dados[TAMDADOSBIN];
 } mensagem_bin;
 
 typedef struct
@@ -41,5 +48,5 @@ mensagem Mensagem_binToMensagem (mensagem_bin msg_bin);
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void EnviaArq(int s, char * path, int type);
-void InsereParidade (mensagem_bin msg_bin);
+void InsereParidade (mensagem_bin *msg_bin);
 int TemErro (mensagem_bin msg_bin);
