@@ -11,13 +11,13 @@
 #define CYN  "\x1B[36m"
 #define WHT  "\x1B[37m"
 
-char *LerStringDin(int *tam);
+unsigned char *LerStringDin(int *tam);
 void LimpaBuffer ();
 int LeOpcao (int min, int max);
-char *ngets (char *str, int n, FILE *fp);
+unsigned char *ngets (unsigned char *str, int n, FILE *fp);
 void PressioneEnter ();
-void intTobin(int num, int qtdbits, char *bin);
-int binToint(char *bin, int qtdbits);
+void intTobin(int num, int qtdbits, unsigned char *bin);
+int binToint(unsigned char *bin, int qtdbits);
 int pot(int base, int exp);
-int EhFimTexto (char *texto);
+int EhFimTexto (unsigned char *texto);
 int EhImpar (int x);

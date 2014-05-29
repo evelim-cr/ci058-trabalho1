@@ -31,17 +31,52 @@ mensagem Mensagem_binToMensagem (mensagem_bin msg_bin)
 
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
-	if (send (socket, msg_bin, TAMMSG,0)!=TAMMSG)
-		puts ("Erro ao enviar mensagem");
+    mensagem msg;
+    mensagem_bin acknack;
+    do
+    {
+        if ((send (socket, msg_bin, TAMMSG,0)==TAMMSG) && (strcmp(msg_bin->inicio, "11101110")==0))
+        {
+            recebe_mensagem_bin(socket, &acknack);
+            msg = Mensagem_binToMensagem(acknack);
+        }
+        else
+            msg.tipo=NACK;
+    } while(msg.tipo==NACK);
 }
 
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
 
-	while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "11101110")!=0));
+	// while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "11101110")!=0));
+    mensagem msg;
+    mensagem_bin acknack;
+    while (1)
+    {
+        if ( (recv (socket, msg_bin, TAMMSG,0)==TAMMSG) && (strcmp(msg_bin->inicio, "11101110")==0))
+        {
+            if (TemErro(*msg_bin))
+            {
+                msg.tipo=NACK;
+                msg.tamanho=0;
+                bzero(msg.dados,2);
+                acknack = MensagemToMensagem_bin(msg);
+                envia_mensagem_bin (socket, &acknack);
+            }
+            else
+            {
+                msg.tipo=ACK;
+                msg.tamanho=0;
+                bzero(msg.dados,2);
+                acknack = MensagemToMensagem_bin(msg);
+                envia_mensagem_bin (socket, &acknack);
+                break;
+            }
+        }
+    }
 }
 
-void EnviaArq(int s, char * path, int type)
+void EnviaArq(int s, unsigned char * path, int type)
 {
     FILE *fp;
     mensagem msg;
@@ -80,7 +115,7 @@ void EnviaArq(int s, char * path, int type)
     while (!feof(fp))
     {
         if (msg.tamanho<2)
-            fread (&(msg.dados[(msg.tamanho)++]), sizeof(char), 1, fp);
+            fread (&(msg.dados[(msg.tamanho)++]), sizeof(unsigned char), 1, fp);
         if( (msg.tamanho == 2) || (feof(fp)) ){
             if (feof(fp))
                 msg.tipo=FIMTXT;

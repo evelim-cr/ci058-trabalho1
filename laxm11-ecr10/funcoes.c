@@ -1,15 +1,15 @@
 #include "funcoes.h"
 
-char *LerStringDin (int *tam)
+unsigned char *LerStringDin (int *tam)
 {
     int i;
-    char *string;
-    char letra;
-    string = (char *) malloc (sizeof(char));
+    unsigned char *string;
+    unsigned char letra;
+    string = (unsigned char *) malloc (sizeof(unsigned char));
     for (i=0; (letra=getchar())!='\n' ; i++)
     {
         string[i] = letra;
-        string = (char *) realloc (string, sizeof(char)*(i+2));
+        string = (unsigned char *) realloc (string, sizeof(unsigned char)*(i+2));
     }
     string[i] = 0;
     (*tam)=i;
@@ -27,7 +27,7 @@ int LeOpcao (int min, int max)
 {
 /*  Prende o usuario em um loop até que ele digite um  valor entre 'min' e 'max'. O Valor digitado é retornado pela função.
  */
-    char aux[10];
+    unsigned char aux[10];
     int n;
     ngets(aux,6,stdin);
     n = atoi(aux);
@@ -40,7 +40,7 @@ int LeOpcao (int min, int max)
     return n;
 }
 
-char *ngets (char *str, int n, FILE *fp)
+unsigned char *ngets (unsigned char *str, int n, FILE *fp)
 {
     str = fgets (str, n, stdin);
     if (str[strlen(str)-1]=='\n')
@@ -59,7 +59,7 @@ void PressioneEnter ()
 }
 
 
-void intTobin(int num, int qtdbits, char *bin) {
+void intTobin(int num, int qtdbits, unsigned char *bin) {
 // jef
     int i;
     for(i=qtdbits-1; i>=0; i--) {
@@ -69,7 +69,7 @@ void intTobin(int num, int qtdbits, char *bin) {
 }
 
 
-int binToint(char *bin, int qtdbits) {
+int binToint(unsigned char *bin, int qtdbits) {
 //jef
     int i,j,r=0;
     for(i=0;i<qtdbits;i++) {
@@ -88,7 +88,7 @@ int pot(int base, int exp) {
     return p;
 }
 
-int EhFimTexto (char *texto)
+int EhFimTexto (unsigned char *texto)
 {
     if ((texto[0]==0) || (texto[1]==0))
         return 1;

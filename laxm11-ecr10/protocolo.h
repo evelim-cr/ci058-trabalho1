@@ -12,22 +12,22 @@
 
 typedef struct
 {
-	char inicio[TAMINICIOBIN];
-	char tamanho[TAMTAMANHOBIN];
-	char sequencia[TAMSEQUENCIABIN];
-	char tipo[TAMTIPOBIN];
-	char erro[TAMERROBIN];
-	char dados[TAMDADOSBIN];
+	unsigned char inicio[TAMINICIOBIN];
+	unsigned char tamanho[TAMTAMANHOBIN];
+	unsigned char sequencia[TAMSEQUENCIABIN];
+	unsigned char tipo[TAMTIPOBIN];
+	unsigned char erro[TAMERROBIN];
+	unsigned char dados[TAMDADOSBIN];
 } mensagem_bin;
 
 typedef struct
 {
 	int tamanho;
 	int tipo;
-	char dados[2];
+	unsigned char dados[2];
 } mensagem;
 
-#define TAMMSG 26
+#define TAMMSG 40
 #define CD 0
 #define LS 1
 #define PUT 2
@@ -47,6 +47,6 @@ mensagem_bin MensagemToMensagem_bin (mensagem msg);
 mensagem Mensagem_binToMensagem (mensagem_bin msg_bin);
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);
-void EnviaArq(int s, char * path, int type);
+void EnviaArq(int s, unsigned char * path, int type);
 void InsereParidade (mensagem_bin *msg_bin);
 int TemErro (mensagem_bin msg_bin);
