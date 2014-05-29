@@ -370,6 +370,47 @@ void get(int s)
     free (filename);
 }
 
+void put(int s)
+{
+    mensagem msg;
+    mensagem_bin msg_bin;
+    int i=0;
+    int tamfilename;
+    msg.tipo = PUT;
+    msg.tamanho = 0;
+    bzero (msg.dados, 2);
+    msg_bin = MensagemToMensagem_bin(msg);
+    printf("Digite o nome do arquivo:\n? ");
+    char *filename=LerStringDin(&tamfilename);
+    while ( tamfilename-i+1 > 0)
+    {
+        if (msg.tamanho<2)
+        {
+            msg.dados[(msg.tamanho)++] = filename[i];
+            i++;
+        }
+        if ((msg.tamanho==2) || (tamfilename-i+1 == 0))
+        {
+            if (EhFimTexto(msg.dados))
+                msg.tipo=FIMTXT;
+            msg_bin = MensagemToMensagem_bin(msg);
+            envia_mensagem_bin (s, &msg_bin);
+            // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
+            msg.tamanho=0;
+            bzero (msg.dados,2);
+        }
+    }
+    recebe_mensagem_bin (socket, &msg_bin);
+    msg = Mensagem_binToMensagem(msg_bin);
+    if (msg.tipo == SUCESSO)
+        EnviaArq (socket, filename, PUT);
+    recebe_mensagem_bin (socket, &msg_bin);
+    msg = Mensagem_binToMensagem(msg_bin);
+    if (msg.tipo == SUCESSO){
+    //
+    }
+}
+
 void exibeMenu(int socket)
 {
     system ("clear");
