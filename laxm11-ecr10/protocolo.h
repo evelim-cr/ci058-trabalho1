@@ -41,3 +41,5 @@ mensagem Mensagem_binToMensagem (mensagem_bin msg_bin);
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);
 void EnviaArq(int s, char * path, int type);
+void InsereParidade (mensagem_bin msg_bin);
+int TemErro (mensagem_bin msg_bin);

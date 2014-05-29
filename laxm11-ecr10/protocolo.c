@@ -6,13 +6,13 @@ mensagem_bin MensagemToMensagem_bin (mensagem msg)
 	mensagem_bin mbin;
 	strcpy (mbin.inicio,"11101110");
 	intTobin(msg.tamanho,4,mbin.tamanho);
-	strcpy (mbin.sequencia,"0000");
+    bzero (msg.sequencia,4);
 	intTobin(msg.tipo, 4, mbin.tipo);
-	strcpy (mbin.erro,"0000");
 	// mbin.dados[0]=msg.dados[0];
 	// mbin.dados[1]=msg.dados[1];
 	intTobin(msg.dados[0], 8, mbin.dados);
 	intTobin(msg.dados[1], 8, &(mbin.dados[8]));
+    InsereParidade (mbin);
 	return mbin;
 }
 
@@ -38,7 +38,7 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
 
-	while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "11101110")!=0) );
+	while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "11101110")!=0));
 }
 
 void EnviaArq(int s, char * path, int type)
@@ -95,6 +95,35 @@ void EnviaArq(int s, char * path, int type)
     fclose(fp); 
 }
 
+void InsereParidade (mensagem_bin msg_bin)
+{
+    int i; int conta1[4];
+    bzero (msg_bin.erro, 4);
+    bzero (&conta1, sizeof(int)*4);
+
+    for (i = 0; i < 4; i++)
+    {
+        if (msg_bin.tamanho[i]==1)      //soma 1's presentes no tamanho
+            conta1[0]++;
+        if (msg_bin.tipo[i]==1)         //soma 1's presentes no tipo
+            conta1[1]++;
+        if (msg_bin.sequencia[i]==1)    //soma 1's presentes na sequencia
+            conta1[2]++;
+        if (msg_bin.dados[i])==1)       //soma 1's presentes nos dados (nao todos)
+            conta1[3]++;
+    }
+    for (i = 0; i < 3; i++)             //insere bit de paridade do tamanho, tipo e sequencia
+        if (!EhImpar(conta1[i])
+            msg_bin.erro[i]=1;
+
+    for (i = 4; i<16; i++)              //soma 1's restantes nos dados.
+        if (msg_bin.dados[i])==1)
+            conta1[3]++;
+
+    if (!EhImpar(conta1[3])             //insere bit de paridade dos dados
+        msg_bin.erro[3] = 1;
+}
+
 int TemErro (mensagem_bin msg_bin)
 {
     // tamanho dados tipo sequencia
@@ -109,20 +138,20 @@ int TemErro (mensagem_bin msg_bin)
             conta1[0]++;
         if (msg_bin.tipo[i]==1)         //soma 1's presentes no tipo
             conta1[1]++;
-        if (msg_bin.sequencia[i]==1)    //soma 1's presentes no tamanho
+        if (msg_bin.sequencia[i]==1)    //soma 1's presentes na sequencia
             conta1[2]++;
         if (msg_bin.dados[i])==1)       //soma 1's presentes nos dados (nao todos)
             conta1[3]++;
     }
     for (i = 0; i < 3; i++)
-        if (!EhImpar(conta1[i])
+        if (!EhImpar(conta1[i])         //detecta erro no tamanho, tipo e sequencia
             return 1;
 
     for (i = 4; i<16; i++)
-        if (msg_bin.dados[i])==1)
+        if (msg_bin.dados[i])==1)       //soma restante dos 1's
             conta1[3]++;
 
-    if (!EhImpar(conta1[3])
+    if (!EhImpar(conta1[3])             //detecta erro nos dados
         return 1;
-    return 0;
+    return 0;                           //nao tem erro
 }
