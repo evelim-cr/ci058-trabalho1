@@ -9,10 +9,10 @@ mensagem_bin MensagemToMensagem_bin (mensagem msg)
 	strcpy (mbin.sequencia,"0000");
 	intTobin(msg.tipo, 4, mbin.tipo);
 	strcpy (mbin.erro,"0000");
-	mbin.dados[0]=msg.dados[0];
-	mbin.dados[1]=msg.dados[1];
-	// intTobin(msg.dados[0], 8, mbin.dados);
-	// intTobin(msg.dados[1], 8, &(mbin.dados[8]));
+	// mbin.dados[0]=msg.dados[0];
+	// mbin.dados[1]=msg.dados[1];
+	intTobin(msg.dados[0], 8, mbin.dados);
+	intTobin(msg.dados[1], 8, &(mbin.dados[8]));
 	return mbin;
 }
 
@@ -22,10 +22,10 @@ mensagem Mensagem_binToMensagem (mensagem_bin msg_bin)
 	mensagem msg;
 	msg.tamanho = binToint(msg_bin.tamanho,4);
 	msg.tipo = binToint(msg_bin.tipo, 4);
-	// for (i = 0; i < msg.tamanho; i++)
-	// 	msg.dados[i] = binToint(&(msg_bin.dados[i*8]),8);
-	msg.dados[0]=msg_bin.dados[0];
-	msg.dados[1]=msg_bin.dados[1];
+	for (i = 0; i < msg.tamanho; i++)
+	 	msg.dados[i] = binToint(&(msg_bin.dados[i*8]),8);
+	// msg.dados[0]=msg_bin.dados[0];
+	// msg.dados[1]=msg_bin.dados[1];
 	return msg;
 }
 
@@ -39,7 +39,6 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
 
 	while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "11101110")!=0) );
-	//puts ("Mensagem recebida.");
 }
 
 void EnviaArq(int s, char * path, int type)
@@ -59,7 +58,7 @@ void EnviaArq(int s, char * path, int type)
         return;
     }
 
-    if ( (type==GET) || (type==PUT) )
+    if ( (type==GET) || (type==PUT) )   // se eh GET ou PUT, envia mensagem com tamanho do arquivo.
     {
 	    fseek(fp, 0L, SEEK_END);
 	    unsigned int tamfp = ftell(fp);	// fazer barra de progresso
@@ -94,4 +93,36 @@ void EnviaArq(int s, char * path, int type)
     }
     printf ("\t[%d mensagens enviadas]\n\tFim da transferencia do arquivo.\n", i);	//log
     fclose(fp); 
+}
+
+int TemErro (mensagem_bin msg_bin)
+{
+    // tamanho dados tipo sequencia
+    int i; int conta1[4];
+    bzero (&conta1, sizeof(int)*4);
+
+    for (i = 0; i < 4; i++)
+    {
+        if (msg_bin.erro[i]==1)         // soma bit de erro
+            conta1[i]++;
+        if (msg_bin.tamanho[i]==1)      //soma 1's presentes no tamanho
+            conta1[0]++;
+        if (msg_bin.tipo[i]==1)         //soma 1's presentes no tipo
+            conta1[1]++;
+        if (msg_bin.sequencia[i]==1)    //soma 1's presentes no tamanho
+            conta1[2]++;
+        if (msg_bin.dados[i])==1)       //soma 1's presentes nos dados (nao todos)
+            conta1[3]++;
+    }
+    for (i = 0; i < 3; i++)
+        if (!EhImpar(conta1[i])
+            return 1;
+
+    for (i = 4; i<16; i++)
+        if (msg_bin.dados[i])==1)
+            conta1[3]++;
+
+    if (!EhImpar(conta1[3])
+        return 1;
+    return 0;
 }

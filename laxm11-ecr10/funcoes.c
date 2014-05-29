@@ -94,3 +94,10 @@ int EhFimTexto (char *texto)
         return 1;
     return 0;
 }
+
+int EhImpar (int x)
+{
+    if (x%2)
+        return 1;
+    return 0;
+}
