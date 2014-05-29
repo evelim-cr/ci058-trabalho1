@@ -6,19 +6,21 @@
 #include "protocolo.h"
 #include "funcoes.h"
 
-void cdLocal (char *path);
-void cdRemoto (int socket, char *path);
+void cdLocal (unsigned char *path);
+void cdRemoto (int socket, unsigned char *path);
 void lsLocal ();
 void lsRemoto (int s);
 void catLocal();
 void catRemoto(int s);
 void get(int s);
-char *DirAtualLocal(void);
+void put(int s);
 void exibeMenu(int s);
+unsigned char *DirAtualLocal(void);
+unsigned char *DirAtualRemoto(int socket);
 
 
 
-int main(int argc, char const *argv[])
+int main(int argc, unsigned char const *argv[])
 {
     int s = criaConexao();
     int tamStr;
@@ -44,7 +46,7 @@ int main(int argc, char const *argv[])
             case 3: // CD Local
             {
                 printf ("Digite o caminho para o diretorio:\n? cd ");
-                char *path=LerStringDin(&tamStr);
+                unsigned char *path=LerStringDin(&tamStr);
                 cdLocal (path);
                 free (path);
                 break;
@@ -52,7 +54,7 @@ int main(int argc, char const *argv[])
             case 4: // CD Remoto
             {
                 printf ("Digite o caminho para o diretorio:\n? cd ");
-                char *path=LerStringDin(&tamStr);
+                unsigned char *path=LerStringDin(&tamStr);
                 cdRemoto (s, path);
                 free (path);
                 PressioneEnter();
@@ -78,6 +80,7 @@ int main(int argc, char const *argv[])
             }
             case 8: // PUT
             {
+                put(s);
                 PressioneEnter();
                 break;
             }
@@ -89,7 +92,7 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-void cdLocal (char *path)
+void cdLocal (unsigned char *path)
 {
     if (chdir(path))
     {
@@ -98,7 +101,7 @@ void cdLocal (char *path)
     }
 }
 
-void cdRemoto (int socket, char *path)
+void cdRemoto (int socket, unsigned char *path)
 {
     mensagem msg;
     mensagem_bin msg_bin;
@@ -135,46 +138,13 @@ void cdRemoto (int socket, char *path)
 
 }
 
-char *DirAtualLocal(void)
-{
-    char *dir;
-    dir = (char *) (long int) get_current_dir_name();
-    if (dir==0)
-        return ("Nao foi possivel localizar o diretorio atual.");
-    return dir;
-}
-
-char *DirAtualRemoto(int socket)
-{
-    int i=0, j;
-    char *dir=NULL;
-    mensagem msg;
-    mensagem_bin msg_bin;
-    msg.tipo = DIR_ATUAL;
-    msg.tamanho = 0;
-    bzero (msg.dados, 2);
-    msg_bin = MensagemToMensagem_bin(msg);
-    envia_mensagem_bin (socket, &msg_bin);
-    do
-    {
-        recebe_mensagem_bin(socket, &msg_bin);
-        msg = Mensagem_binToMensagem(msg_bin);
-        dir = realloc(dir, i+msg.tamanho);
-        for (j = 0; j < msg.tamanho; j++, i++)
-            dir[i]= msg.dados[j];
-    } while (msg.tipo!=FIMTXT);
-    return dir;
-}
-
-
-
 void lsLocal ()
 {
     printf ("Digite os argumentos do ls:\n? ls ");
     int tamargs;
-    char *lsArgs=LerStringDin(&tamargs);
+    unsigned char *lsArgs=LerStringDin(&tamargs);
     int lsTam = 3+strlen(lsArgs)+1;
-    char *ls = (char *) malloc (sizeof(char)*lsTam);
+    unsigned char *ls = (unsigned char *) malloc (sizeof(unsigned char)*lsTam);
     ls[0] = 'l';
     ls[1] = 's';
     ls[2] = ' ';
@@ -193,7 +163,7 @@ void lsRemoto (int s)
     msg.tipo = LS;
     printf ("Digite os argumentos do ls remoto:\n? ls ");
     int tamargs, i=0, j;
-    char *ls=NULL, *lsArgs=LerStringDin(&tamargs);
+    unsigned char *ls=NULL, *lsArgs=LerStringDin(&tamargs);
     int tamls=4+tamargs;
     ls = malloc (4+tamargs);
     ls[0]='l';
@@ -201,7 +171,7 @@ void lsRemoto (int s)
     ls[2]=' ';
     ls[3]='\0';
     strcat (ls, lsArgs);
-    char *resposta=NULL;
+    unsigned char *resposta=NULL;
     msg.tamanho=0;
     while ( tamls-i > 0)
     {
@@ -240,9 +210,9 @@ void catLocal()
 {
     printf("Digite os argumentos do cat:\n? cat ");
     int tamargs;
-    char *catArgs=LerStringDin(&tamargs);
+    unsigned char *catArgs=LerStringDin(&tamargs);
     int catTam = 4+strlen(catArgs)+1;
-    char *cat = (char *) malloc (sizeof(char)*catTam);
+    unsigned char *cat = (unsigned char *) malloc (sizeof(unsigned char)*catTam);
     cat[0] = 'c';
     cat[1] = 'a';
     cat[2] = 't';
@@ -261,9 +231,9 @@ void catRemoto(int s)
     mensagem_bin msg_bin;
     printf("Digite os argumentos do cat:\n? cat ");
     int tamargs;
-    char *catArgs=LerStringDin(&tamargs), *resposta=NULL;
+    unsigned char *catArgs=LerStringDin(&tamargs), *resposta=NULL;
     int i=0, j=0, tamcat = 4+strlen(catArgs)+1;
-    char *cat = (char *) malloc (sizeof(char)*tamcat);
+    unsigned char *cat = (unsigned char *) malloc (sizeof(unsigned char)*tamcat);
     cat[0] = 'c';
     cat[1] = 'a';
     cat[2] = 't';
@@ -317,7 +287,7 @@ void get(int s)
     envia_mensagem_bin (s, &msg_bin);
     printf("Digite o nome do arquivo:\n? ");
     int tamfilename;
-    char *filename=LerStringDin(&tamfilename);
+    unsigned char *filename=LerStringDin(&tamfilename);
     int i=0;
     msg.tipo = GET;
     msg.tamanho = 0;
@@ -361,7 +331,7 @@ void get(int s)
             msg = Mensagem_binToMensagem(msg_bin);
         }
         puts ("Arquivo copiado com sucesso.");
-        char mode[] = "0777";
+        unsigned char mode[] = "0777";
         chmod (filename,strtol(mode, 0, 8));
         fclose (dest);
     }
@@ -379,9 +349,8 @@ void put(int s)
     msg.tipo = PUT;
     msg.tamanho = 0;
     bzero (msg.dados, 2);
-    msg_bin = MensagemToMensagem_bin(msg);
     printf("Digite o nome do arquivo:\n? ");
-    char *filename=LerStringDin(&tamfilename);
+    unsigned char *filename=LerStringDin(&tamfilename);
     while ( tamfilename-i+1 > 0)
     {
         if (msg.tamanho<2)
@@ -404,11 +373,6 @@ void put(int s)
     msg = Mensagem_binToMensagem(msg_bin);
     if (msg.tipo == SUCESSO)
         EnviaArq (s, filename, PUT);
-    recebe_mensagem_bin (s, &msg_bin);
-    msg = Mensagem_binToMensagem(msg_bin);
-    if (msg.tipo == SUCESSO){
-    //
-    }
 }
 
 void exibeMenu(int socket)
@@ -431,4 +395,35 @@ void exibeMenu(int socket)
          BLU "\t|                           |\n" NRM
          BLU "\t+---------------------------+\n" NRM
          "? ");
+}
+
+unsigned char *DirAtualLocal(void)
+{
+    unsigned char *dir;
+    dir = (unsigned char *) (long int) get_current_dir_name();
+    if (dir==0)
+        return ("Nao foi possivel localizar o diretorio atual.");
+    return dir;
+}
+
+unsigned char *DirAtualRemoto(int socket)
+{
+    int i=0, j;
+    unsigned char *dir=NULL;
+    mensagem msg;
+    mensagem_bin msg_bin;
+    msg.tipo = DIR_ATUAL;
+    msg.tamanho = 0;
+    bzero (msg.dados, 2);
+    msg_bin = MensagemToMensagem_bin(msg);
+    envia_mensagem_bin (socket, &msg_bin);
+    do
+    {
+        recebe_mensagem_bin(socket, &msg_bin);
+        msg = Mensagem_binToMensagem(msg_bin);
+        dir = realloc(dir, i+msg.tamanho);
+        for (j = 0; j < msg.tamanho; j++, i++)
+            dir[i]= msg.dados[j];
+    } while (msg.tipo!=FIMTXT);
+    return dir;
 }
