@@ -15,57 +15,73 @@ int main(int argc, unsigned char const *argv[])
 {
 	int s = criaConexao();
 	mensagem msg;
-	bzero (&msg,sizeof(mensagem));
-	mensagem_bin msg_bin;
-	bzero (&msg_bin, TAMMSG);
 	system("clear");
 	while(1)
 	{
+		bzero (&msg,sizeof(mensagem));
+		mensagem_bin msg_bin;
+		bzero (&msg_bin, TAMMSG);
 		puts ("----------------------");
 		puts ("Aguardando mensagem...");	//log
-		recebe_mensagem_bin(s, &msg_bin);
-		msg = Mensagem_binToMensagem(msg_bin);
-		puts ("----------------------");
-		puts ("Mensagem Recebida!");	//log
+		do{
+			recebe_mensagem_bin(s, &msg_bin);
+			msg = Mensagem_binToMensagem(msg_bin);
+		}while( (msg.tipo==ACK) || (msg.tipo==NACK) );	
 		switch (msg.tipo)
 		{
 			case LS:
 			{
+				puts ("----------------------");
+				puts ("Mensagem Recebida!");	//log
 				puts ("\tTipo: LS");	//log
 				lsRemotoServer(s, msg);
 				break;
 			}
 			case DIR_ATUAL:
 			{
+				puts ("----------------------");
+				puts ("Mensagem Recebida!");	//log
 				puts ("\tTipo: DIR_ATUAL");	//log
 				EnviaDirAtual(s, msg);
 				break;
 			}
 			case CD:
 			{
+				puts ("----------------------");
+				puts ("Mensagem Recebida!");	//log
 				puts ("\tTipo: CD");	//log
 				cdRemotoServer(s, msg);
 				break;
 			}
 			case CAT:
 			{
+				puts ("----------------------");
+				puts ("Mensagem Recebida!");	//log
 				puts ("\tTipo: CAT");	//log
 				catRemotoServer(s, msg);
 				break;
 			}
 			case GET:
 			{
+				puts ("----------------------");
+				puts ("Mensagem Recebida!");	//log
 				puts ("\tTipo: GET");	//log
 				getServer(s, msg);
 				break;
 			}
 			case PUT:
 			{
+				puts ("----------------------");
+				puts ("Mensagem Recebida!");	//log
 				puts ("\tTipo: PUT");	//log
 				putServer (s, msg);
 				break;
 			}
-
+			default:
+			{
+				//altus lixu
+				break;
+			}
 		}
 	}
 	return 0;
