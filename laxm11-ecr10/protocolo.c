@@ -37,7 +37,7 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
     {
         if ((send (socket, msg_bin, TAMMSG,0)==TAMMSG) && (strcmp(msg_bin->inicio, "11101110")==0))
         {
-            recebe_mensagem_bin(socket, &acknack);
+            recebe_acknack(socket, &acknack);
             msg = Mensagem_binToMensagem(acknack);
         }
         else
@@ -80,6 +80,12 @@ void envia_acknack (int socket, mensagem_bin *acknack)
 {
     if (send (socket, acknack, TAMMSG,0)!=TAMMSG)
             puts ("Erro ao enviar ACK ou NACK");
+}
+
+void recebe_acknack (int socket, mensagem_bin *acknack)
+{
+    mensagem msg = Mensagem_binToMensagem(*acknack);
+    while ( (recv (socket, acknack, TAMMSG,0)!=TAMMSG) && (strcmp(acknack->inicio, "11101110")!=0) && ((msg.tipo!=ACK) || (msg.tipo!=NACK)) );
 }
 
 void EnviaArq(int s, unsigned char * path, int type)
