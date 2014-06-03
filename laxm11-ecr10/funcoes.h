@@ -21,3 +21,5 @@ int binToint(unsigned char *bin, int qtdbits);
 int pot(int base, int exp);
 int EhFimTexto (unsigned char *texto, int len);
 int EhImpar (int x);
+void incrementa_sequencia(int *seq);
+int EhSequenciaEsperada (unsigned char *seqbin, int seq);

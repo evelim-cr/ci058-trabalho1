@@ -107,6 +107,7 @@ void cdRemoto (int socket, unsigned char *path)
     mensagem_bin msg_bin;
     msg.tipo = CD;
     msg.tamanho = 0;
+    msg.sequencia = 0;
     bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
     envia_mensagem_bin (socket, &msg_bin);
@@ -114,6 +115,7 @@ void cdRemoto (int socket, unsigned char *path)
     msg.tipo = CD;
     msg.tamanho = 0;
     int tampath = strlen(path)+1;
+    int seq = 1;
     while ( tampath-i > 0)
     {
         if (msg.tamanho<15)
@@ -125,14 +127,17 @@ void cdRemoto (int socket, unsigned char *path)
         {
             if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
+            msg.sequencia = seq;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (socket, &msg_bin);
+            incrementa_sequencia(&seq);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
             bzero (msg.dados,15);
         }
     }
-    recebe_mensagem_bin(socket, &msg_bin);
+    seq=0;
+    recebe_mensagem_bin(socket, &msg_bin, seq);
     msg = Mensagem_binToMensagem(msg_bin);
     int resposta = (int) msg.dados[0];  //ou atoi
     if (resposta)
@@ -167,6 +172,7 @@ void lsRemoto (int s)
     mensagem_bin msg_bin;
     msg.tipo = LS;
     msg.tamanho = 0;
+    msg.sequencia = 0;
     bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
     envia_mensagem_bin (s, &msg_bin);
@@ -175,6 +181,7 @@ void lsRemoto (int s)
     int tamargs, i=0, j;
     unsigned char *ls=NULL, *lsArgs=LerStringDin(&tamargs);
     int tamls=4+tamargs;
+    int seq = 1;
     ls = malloc (4+tamargs);
     ls[0]='l';
     ls[1]='s';
@@ -194,8 +201,10 @@ void lsRemoto (int s)
         {
             if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
+            msg.sequencia = seq;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
+            incrementa_sequencia(&seq);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
             bzero (msg.dados,15);
@@ -205,7 +214,8 @@ void lsRemoto (int s)
     j=0;
     do
     {
-        recebe_mensagem_bin(s, &msg_bin);
+        recebe_mensagem_bin(s, &msg_bin,seq);
+        incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);
         resposta = realloc(resposta, i+msg.tamanho);
         for (j = 0; j < msg.tamanho; j++, i++)
@@ -240,6 +250,7 @@ void catRemoto(int s)
     mensagem msg;
     mensagem_bin msg_bin;
     msg.tipo = CAT;
+    msg.sequencia = 0;
     msg.tamanho = 0;
     bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
@@ -249,6 +260,7 @@ void catRemoto(int s)
     unsigned char *catArgs=LerStringDin(&tamargs), *resposta=NULL;
     int i=0, j=0, tamcat = 4+strlen(catArgs)+1;
     unsigned char *cat = (unsigned char *) malloc (sizeof(unsigned char)*tamcat);
+    int seq = 1;
     cat[0] = 'c';
     cat[1] = 'a';
     cat[2] = 't';
@@ -268,6 +280,8 @@ void catRemoto(int s)
         {
             if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
+            msg.sequencia = seq;
+            incrementa_sequencia(&seq);
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
@@ -279,7 +293,8 @@ void catRemoto(int s)
     j=0;
     do
     {
-        recebe_mensagem_bin(s, &msg_bin);
+        recebe_mensagem_bin(s, &msg_bin,seq);
+        incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);
         resposta = realloc(resposta, i+msg.tamanho);
         for (j = 0; j < msg.tamanho; j++, i++)
@@ -297,6 +312,7 @@ void get(int s)
     mensagem_bin msg_bin;
     msg.tipo = GET;
     msg.tamanho = 0;
+    msg.sequencia = 0;
     bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
     envia_mensagem_bin (s, &msg_bin);
@@ -306,6 +322,7 @@ void get(int s)
     int i=0;
     msg.tipo = GET;
     msg.tamanho = 0;
+    int seq = 1;
     while ( tamfilename-i+1 > 0)
     {
         if (msg.tamanho<15)
@@ -317,6 +334,8 @@ void get(int s)
         {
             if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
+            msg.sequencia = seq;
+            incrementa_sequencia(&seq);
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
@@ -324,7 +343,9 @@ void get(int s)
             bzero (msg.dados,15);
         }
     }
-    recebe_mensagem_bin(s, &msg_bin);
+
+    recebe_mensagem_bin(s, &msg_bin, seq);
+    incrementa_sequencia(&seq);
     msg = Mensagem_binToMensagem(msg_bin);
     FILE *dest;
     if (msg.tipo!=ERRO)
@@ -332,7 +353,8 @@ void get(int s)
         if (msg.tipo==TAMARQ)
             printf("Tamanho do arquivo: %uB.\n", msg.dados[0]);
         
-        recebe_mensagem_bin(s, &msg_bin);
+        recebe_mensagem_bin(s, &msg_bin, seq);
+        incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);
         if ((dest = fopen (filename,"w+b"))==NULL)
         {
@@ -342,7 +364,8 @@ void get(int s)
         {
             if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
                 puts ("Erro na escrita em arquivo.");
-            recebe_mensagem_bin(s, &msg_bin);
+            recebe_mensagem_bin(s, &msg_bin, seq);
+            incrementa_sequencia(&seq);
             msg = Mensagem_binToMensagem(msg_bin);
         }
         puts ("Arquivo copiado com sucesso.");
@@ -361,6 +384,7 @@ void put(int s)
     mensagem_bin msg_bin;
     msg.tipo = PUT;
     msg.tamanho = 0;
+    msg.sequencia = 0;
     bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
     envia_mensagem_bin (s, &msg_bin);
@@ -368,6 +392,7 @@ void put(int s)
     int tamfilename;
     msg.tipo = PUT;
     msg.tamanho = 0;
+    int seq = 1;
     bzero (msg.dados, 15);
     printf("Digite o nome do arquivo:\n? ");
     unsigned char *filename=LerStringDin(&tamfilename);
@@ -382,6 +407,8 @@ void put(int s)
         {
             if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
+            msg.sequencia = seq;
+            incrementa_sequencia(&seq);
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
@@ -391,11 +418,12 @@ void put(int s)
     }
     do
     {
-        recebe_mensagem_bin (s, &msg_bin);
+        recebe_mensagem_bin (s, &msg_bin, seq);
+        incrementa_sequencia(&seq);
     }while ((msg.tipo==ACK) || (msg.tipo==NACK));
     msg = Mensagem_binToMensagem(msg_bin);
     if (msg.tipo == SUCESSO)
-        EnviaArq (s, filename, PUT);
+        EnviaArq (s, filename, PUT, &seq);
 }
 
 void exibeMenu(int socket)
@@ -437,12 +465,15 @@ unsigned char *DirAtualRemoto(int socket)
     mensagem_bin msg_bin;
     msg.tipo = DIR_ATUAL;
     msg.tamanho = 0;
+    msg.sequencia = 0;
     bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
     envia_mensagem_bin (socket, &msg_bin);
+    int seq = 1;
     do
     {
-        recebe_mensagem_bin(socket, &msg_bin);
+        recebe_mensagem_bin(socket, &msg_bin, seq);
+        incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);
         dir = realloc(dir, i+msg.tamanho);
         for (j = 0; j < msg.tamanho; j++, i++)
