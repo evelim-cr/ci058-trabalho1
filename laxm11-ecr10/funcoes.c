@@ -103,3 +103,20 @@ int EhImpar (int x)
         return 1;
     return 0;
 }
+
+void incrementa_sequencia(int *seq)
+{
+    if (*seq < 7)
+        *seq++;
+    else
+        *seq = 0;
+}
+
+int EhSequenciaEsperada (unsigned char *seqbin, int seq)
+{
+   int seqComp = binToint(seqbin,4);
+   if (seqComp == seq)
+        return 1;
+   else
+        return 0;      
+}

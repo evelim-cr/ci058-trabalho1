@@ -24,6 +24,7 @@ typedef struct
 {
 	int tamanho;
 	int tipo;
+	int sequencia;
 	unsigned char dados[15];
 } mensagem;
 
@@ -46,8 +47,8 @@ typedef struct
 mensagem_bin MensagemToMensagem_bin (mensagem msg);
 mensagem Mensagem_binToMensagem (mensagem_bin msg_bin);
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin);
-void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin);
-void EnviaArq(int s, unsigned char * path, int type);
+void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin, int seq);
+void EnviaArq(int s, unsigned char * path, int type, int *seq);
 void InsereParidade (mensagem_bin *msg_bin);
 int TemErro (mensagem_bin msg_bin);
 void envia_acknack (int socket, mensagem_bin *acknack);

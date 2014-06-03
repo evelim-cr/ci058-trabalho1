@@ -21,10 +21,11 @@ int main(int argc, unsigned char const *argv[])
 		bzero (&msg,sizeof(mensagem));
 		mensagem_bin msg_bin;
 		bzero (&msg_bin, TAMMSG);
+		int seq = 0;
 		puts ("----------------------");
 		puts ("Aguardando mensagem...");	//log
 		do{
-			recebe_mensagem_bin(s, &msg_bin);
+			recebe_mensagem_bin(s, &msg_bin, seq);
 			msg = Mensagem_binToMensagem(msg_bin);
 		}while( (msg.tipo==ACK) || (msg.tipo==NACK) );	
 		switch (msg.tipo)
@@ -93,6 +94,7 @@ void lsRemotoServer(int socket, mensagem msg)
 	unsigned char *comando=NULL;
 	int i=0, j, acabou=0, countmsg=1;
 	puts ("\tRecebendo comando 'ls'.");	//log
+	int seq = 1;
 	while (!acabou)
 	{
 		comando = realloc(comando,i+msg.tamanho);
@@ -103,7 +105,8 @@ void lsRemotoServer(int socket, mensagem msg)
 			acabou=1;
 		else
 		{
-			recebe_mensagem_bin (socket, &msg_bin);
+			recebe_mensagem_bin (socket, &msg_bin, seq);
+			incrementa_sequencia(&seq);
 			msg = Mensagem_binToMensagem(msg_bin);
 			countmsg++;
 		}
@@ -126,7 +129,7 @@ void lsRemotoServer(int socket, mensagem msg)
 	system (comando);
 	puts ("\tResposta armazenada no arquivo '.file.tmp'.");	//log
 	//funcao abre o arquivo e envia =)
-	EnviaArq(socket, ".file.tmp", LS);
+	EnviaArq(socket, ".file.tmp", LS, &seq);
 	system ("rm -f .file.tmp");
 }
 
@@ -134,7 +137,7 @@ void cdRemotoServer (int socket, mensagem msg)
 {
 	mensagem_bin msg_bin;
 	unsigned char *dir=NULL;
-	int i=0, j, acabou=0, countmsg=1;
+	int i=0, j, acabou=0, countmsg=1; int seq=1;
 	puts ("\tRecebendo comando 'cd'.");	//log
 	while (!acabou)
 	{
@@ -146,7 +149,7 @@ void cdRemotoServer (int socket, mensagem msg)
 			acabou=1;
 		else
 		{
-			recebe_mensagem_bin (socket, &msg_bin);
+			recebe_mensagem_bin (socket, &msg_bin, seq);
 			msg = Mensagem_binToMensagem(msg_bin);
 			countmsg++;
 		}
@@ -165,6 +168,7 @@ void cdRemotoServer (int socket, mensagem msg)
 	}
 	msg.tamanho=1;
 	msg.dados[0]=enviar;
+	msg.sequencia=0;
 	msg_bin = MensagemToMensagem_bin(msg);
 	envia_mensagem_bin (socket, &msg_bin);
 	puts ("\tPronto!");	//log
@@ -175,6 +179,7 @@ void catRemotoServer(int socket, mensagem msg)
 	mensagem_bin msg_bin;
 	unsigned char *comando=NULL;
 	int i=0, j, acabou=0, countmsg=1;
+	int seq = 1;
 	puts ("\tRecebendo comando 'cat'.");	//log
 	while (!acabou)
 	{
@@ -186,7 +191,8 @@ void catRemotoServer(int socket, mensagem msg)
 			acabou=1;
 		else
 		{
-			recebe_mensagem_bin (socket, &msg_bin);
+			recebe_mensagem_bin (socket, &msg_bin, seq);
+			incrementa_sequencia(&seq);
 			msg = Mensagem_binToMensagem(msg_bin);
 			countmsg++;
 		}
@@ -208,7 +214,7 @@ void catRemotoServer(int socket, mensagem msg)
 	comando[i]='\0';
 	system (comando);
 	puts ("\tResposta armazenada no arquivo '.file.tmp'.");	//log
-	EnviaArq(socket, ".file.tmp", CAT);
+	EnviaArq(socket, ".file.tmp", CAT, &seq);
 	system ("rm -f .file.tmp");
 }
 
@@ -218,6 +224,7 @@ void getServer (int socket, mensagem msg)
 	unsigned char *filename=NULL;
 	FILE *fp;
 	int i=0, j, acabou=0, countmsg=0;
+	int seq = 1;
 	puts ("\tRecebendo nome do arquivo.");	//log
 	while (!acabou)
 	{
@@ -229,13 +236,14 @@ void getServer (int socket, mensagem msg)
 			acabou=1;
 		else
 		{
-			recebe_mensagem_bin (socket, &msg_bin);
+			recebe_mensagem_bin (socket, &msg_bin, seq);
+			incrementa_sequencia(&seq);
 			msg = Mensagem_binToMensagem(msg_bin);
 			countmsg++;
 		}
 	}
 	printf ("\t[%d mensagens recebidas]\n\tArquivo requisitado: ", countmsg); puts (filename);	//log
-	EnviaArq (socket, filename, GET);
+	EnviaArq (socket, filename, GET, &seq);
 }
 
 void putServer (int s, mensagem msg)
@@ -244,6 +252,7 @@ void putServer (int s, mensagem msg)
 	unsigned char *filename=NULL;
 	FILE *fp;
 	int i=0, j, acabou=0, countmsg=0;
+	int seq = 1;
 	puts ("\tRecebendo nome do arquivo.");	//log
 	while (!acabou)
 	{
@@ -254,17 +263,21 @@ void putServer (int s, mensagem msg)
 		if (msg.tipo==FIMTXT){ //recebeu o nome do arquivo com sucesso, envia uma msg com o tipo sucesso para 
 			acabou=1;
 			msg.tipo==SUCESSO;
+			msg.sequencia = seq;
+			incrementa_sequencia(&seq);
 			msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
 		}
 		else
 		{
-			recebe_mensagem_bin (s, &msg_bin);
+			recebe_mensagem_bin (s, &msg_bin, seq);
+			incrementa_sequencia(&seq);
 			msg = Mensagem_binToMensagem(msg_bin);
 			countmsg++;
 		}
 	}
-	recebe_mensagem_bin(s, &msg_bin);
+	recebe_mensagem_bin(s, &msg_bin, seq);
+	incrementa_sequencia(&seq);
     msg = Mensagem_binToMensagem(msg_bin);
     FILE *dest;
 	if (msg.tipo!=ERRO)
@@ -272,7 +285,8 @@ void putServer (int s, mensagem msg)
         if (msg.tipo==TAMARQ)
             printf("Tamanho do arquivo: %uB.\n", msg.dados[0]);
         
-        recebe_mensagem_bin(s, &msg_bin);
+        recebe_mensagem_bin(s, &msg_bin, seq);
+        incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);
         if ((dest = fopen (filename,"w+b"))==NULL)
         {
@@ -282,7 +296,8 @@ void putServer (int s, mensagem msg)
         {
             if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
                 puts ("Erro na escrita em arquivo.");
-            recebe_mensagem_bin(s, &msg_bin);
+            recebe_mensagem_bin(s, &msg_bin,seq);
+            incrementa_sequencia(&seq);
             msg = Mensagem_binToMensagem(msg_bin);
         }
         puts ("Arquivo copiado com sucesso.");
@@ -301,6 +316,7 @@ void EnviaDirAtual (int socket, mensagem msg)
 	unsigned char *dir; unsigned char erro[]="Nao foi possivel localizar o diretorio atual.";
     dir = (unsigned char *) (long int) get_current_dir_name();
     unsigned char *enviar;
+    int seq = 1;
     if (dir==0)
     {
     	puts ("\tEnviando mensagem de erro.");	//log
@@ -325,6 +341,8 @@ void EnviaDirAtual (int socket, mensagem msg)
         {
             if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
+            msg.sequencia = seq;
+            incrementa_sequencia(&seq);
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (socket, &msg_bin);
             countmsg++;

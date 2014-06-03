@@ -9,7 +9,7 @@ mensagem_bin MensagemToMensagem_bin (mensagem msg)
     mbin.inicio[3]=0;
     mbin.inicio[7]=0;
 	intTobin(msg.tamanho,TAMTAMANHOBIN,mbin.tamanho);
-    bzero (mbin.sequencia,TAMSEQUENCIABIN);
+    intTobin(msg.sequencia,TAMSEQUENCIABIN,mbin.sequencia);
 	intTobin(msg.tipo, TAMTIPOBIN, mbin.tipo);
 	// mbin.dados[0]=msg.dados[0];
 	// mbin.dados[1]=msg.dados[1];
@@ -51,10 +51,8 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
     } while(msg.tipo==NACK);
 }
 
-void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
+void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin, int seq)
 {
-
-	// while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "11101110")!=0));
     mensagem msg;
     mensagem_bin acknack;
     char inicio[8];
@@ -63,7 +61,7 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
     inicio[7]=0;
     while (1)
     {
-        if ( (recv (socket, msg_bin, TAMMSG,0)==TAMMSG) && (memcmp(msg_bin->inicio, inicio,8))==0)
+        if ( (recv (socket, msg_bin, TAMMSG,0)==TAMMSG) && ((memcmp(msg_bin->inicio, inicio,8))==0) && EhSequenciaEsperada(msg_bin->sequencia,seq))
         {
             if (TemErro(*msg_bin))
             {
@@ -98,7 +96,7 @@ void recebe_acknack (int socket, mensagem_bin *acknack)
     while ( (recv (socket, acknack, TAMMSG,0)!=TAMMSG) && (strcmp(acknack->inicio, "11101110")!=0) && ((msg.tipo!=ACK) || (msg.tipo!=NACK)) );
 }
 
-void EnviaArq(int s, unsigned char * path, int type)
+void EnviaArq(int s, unsigned char * path, int type, int *seq)
 {
     FILE *fp;
     mensagem msg;
@@ -109,6 +107,7 @@ void EnviaArq(int s, unsigned char * path, int type)
         printf ("\tArquivo nao existe.\n");	//log
         msg.tipo=ERRO;
         msg.tamanho=0;
+        msg.sequencia=*seq;
         bzero (msg.dados,15);
         msg_bin = MensagemToMensagem_bin(msg);
         envia_mensagem_bin (s, &msg_bin);
@@ -123,6 +122,8 @@ void EnviaArq(int s, unsigned char * path, int type)
 	    rewind (fp);
 	    msg.tipo = TAMARQ;
 	    msg.tamanho = 1;
+        msg.sequencia = *seq;
+        incrementa_sequencia(seq);
 	    msg.dados[0] = tamfp;
 	    msg_bin = MensagemToMensagem_bin(msg);
 	    envia_mensagem_bin(s, &msg_bin);
@@ -141,6 +142,8 @@ void EnviaArq(int s, unsigned char * path, int type)
         if( (msg.tamanho == 15) || (feof(fp)) ){
             if (feof(fp))
                 msg.tipo=FIMTXT;
+            msg.sequencia=*seq;
+            incrementa_sequencia(seq);
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             i++;
