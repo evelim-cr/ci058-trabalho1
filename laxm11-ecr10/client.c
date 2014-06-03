@@ -111,20 +111,20 @@ void cdRemoto (int socket, unsigned char *path)
     int tampath = strlen(path)+1;
     while ( tampath-i > 0)
     {
-        if (msg.tamanho<2)
+        if (msg.tamanho<15)
         {
             msg.dados[(msg.tamanho)++] = path[i];
             i++;
         }
-        if ((msg.tamanho==2) || (tampath-i == 0))
+        if ((msg.tamanho==15) || (tampath-i == 0))
         {
-            if (EhFimTexto(msg.dados))
+            if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (socket, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
-            bzero (msg.dados,2);
+            bzero (msg.dados,15);
         }
     }
     recebe_mensagem_bin(socket, &msg_bin);
@@ -175,20 +175,20 @@ void lsRemoto (int s)
     msg.tamanho=0;
     while ( tamls-i > 0)
     {
-        if (msg.tamanho<2)
+        if (msg.tamanho<15)
         {
             msg.dados[(msg.tamanho)++] = ls[i];
             i++;
         }
-        if ((msg.tamanho==2) || (tamls-i == 0))
+        if ((msg.tamanho==15) || (tamls-i == 0))
         {
-            if (EhFimTexto(msg.dados))
+            if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
-            bzero (msg.dados,2);
+            bzero (msg.dados,15);
         }
     }
     i=0;
@@ -244,20 +244,20 @@ void catRemoto(int s)
     msg.tamanho = 0;
     while ( tamcat-i > 0)
     {
-        if (msg.tamanho<2)
+        if (msg.tamanho<15)
         {
             msg.dados[(msg.tamanho)++] = cat[i];
             i++;
         }
-        if ((msg.tamanho==2) || (tamcat-i == 0))
+        if ((msg.tamanho==15) || (tamcat-i == 0))
         {
-            if (EhFimTexto(msg.dados))
+            if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
-            bzero (msg.dados,2);
+            bzero (msg.dados,15);
         }
     }
     i=0;
@@ -282,7 +282,7 @@ void get(int s)
     mensagem_bin msg_bin;
     msg.tipo = GET;
     msg.tamanho = 0;
-    bzero (msg.dados, 2);
+    bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
     envia_mensagem_bin (s, &msg_bin);
     printf("Digite o nome do arquivo:\n? ");
@@ -293,20 +293,20 @@ void get(int s)
     msg.tamanho = 0;
     while ( tamfilename-i+1 > 0)
     {
-        if (msg.tamanho<2)
+        if (msg.tamanho<15)
         {
             msg.dados[(msg.tamanho)++] = filename[i];
             i++;
         }
-        if ((msg.tamanho==2) || (tamfilename-i+1 == 0))
+        if ((msg.tamanho==15) || (tamfilename-i+1 == 0))
         {
-            if (EhFimTexto(msg.dados))
+            if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
-            bzero (msg.dados,2);
+            bzero (msg.dados,15);
         }
     }
     recebe_mensagem_bin(s, &msg_bin);
@@ -348,28 +348,31 @@ void put(int s)
     int tamfilename;
     msg.tipo = PUT;
     msg.tamanho = 0;
-    bzero (msg.dados, 2);
+    bzero (msg.dados, 15);
     printf("Digite o nome do arquivo:\n? ");
     unsigned char *filename=LerStringDin(&tamfilename);
     while ( tamfilename-i+1 > 0)
     {
-        if (msg.tamanho<2)
+        if (msg.tamanho<15)
         {
             msg.dados[(msg.tamanho)++] = filename[i];
             i++;
         }
-        if ((msg.tamanho==2) || (tamfilename-i+1 == 0))
+        if ((msg.tamanho==15) || (tamfilename-i+1 == 0))
         {
-            if (EhFimTexto(msg.dados))
+            if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
-            bzero (msg.dados,2);
+            bzero (msg.dados,15);
         }
     }
-    recebe_mensagem_bin (s, &msg_bin);
+    do
+    {
+        recebe_mensagem_bin (s, &msg_bin);
+    }while ((msg.tipo==ACK) || (msg.tipo==NACK));
     msg = Mensagem_binToMensagem(msg_bin);
     if (msg.tipo == SUCESSO)
         EnviaArq (s, filename, PUT);
@@ -414,7 +417,7 @@ unsigned char *DirAtualRemoto(int socket)
     mensagem_bin msg_bin;
     msg.tipo = DIR_ATUAL;
     msg.tamanho = 0;
-    bzero (msg.dados, 2);
+    bzero (msg.dados, 15);
     msg_bin = MensagemToMensagem_bin(msg);
     envia_mensagem_bin (socket, &msg_bin);
     do

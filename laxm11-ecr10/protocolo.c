@@ -3,6 +3,7 @@
 
 mensagem_bin MensagemToMensagem_bin (mensagem msg)
 {
+    int i;
 	mensagem_bin mbin;
 	strcpy (mbin.inicio,"11101110");
 	intTobin(msg.tamanho,TAMTAMANHOBIN,mbin.tamanho);
@@ -10,8 +11,8 @@ mensagem_bin MensagemToMensagem_bin (mensagem msg)
 	intTobin(msg.tipo, TAMTIPOBIN, mbin.tipo);
 	// mbin.dados[0]=msg.dados[0];
 	// mbin.dados[1]=msg.dados[1];
-	intTobin(msg.dados[0], 8, mbin.dados);
-	intTobin(msg.dados[1], 8, &(mbin.dados[8]));
+    for (i = 0; i < msg.tamanho; i++)
+	   intTobin(msg.dados[i], 8, &(mbin.dados[i*8]));
     InsereParidade (&mbin);
 	return mbin;
 }
@@ -59,7 +60,7 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
             {
                 msg.tipo=NACK;
                 msg.tamanho=0;
-                bzero(msg.dados,2);
+                bzero(msg.dados,15);
                 acknack = MensagemToMensagem_bin(msg);
                 envia_acknack (socket, &acknack);
             }
@@ -67,7 +68,7 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
             {
                 msg.tipo=ACK;
                 msg.tamanho=0;
-                bzero(msg.dados,2);
+                bzero(msg.dados,15);
                 acknack = MensagemToMensagem_bin(msg);
                 envia_acknack (socket, &acknack);
                 break;
@@ -99,7 +100,7 @@ void EnviaArq(int s, unsigned char * path, int type)
         printf ("\tArquivo nao existe.\n");	//log
         msg.tipo=ERRO;
         msg.tamanho=0;
-        bzero (msg.dados,2);
+        bzero (msg.dados,15);
         msg_bin = MensagemToMensagem_bin(msg);
         envia_mensagem_bin (s, &msg_bin);
         return;
@@ -121,21 +122,21 @@ void EnviaArq(int s, unsigned char * path, int type)
 
     msg.tipo=MOSTRA;
     msg.tamanho=0;
-    bzero (msg.dados,2);
+    bzero (msg.dados,15);
     int i=0;
 	puts ("\tInicio da transferencia do arquivo.");	//log
     while (!feof(fp))
     {
-        if (msg.tamanho<2)
+        if (msg.tamanho<15)
             fread (&(msg.dados[(msg.tamanho)++]), sizeof(unsigned char), 1, fp);
-        if( (msg.tamanho == 2) || (feof(fp)) ){
+        if( (msg.tamanho == 15) || (feof(fp)) ){
             if (feof(fp))
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (s, &msg_bin);
             i++;
             msg.tamanho=0;
-            bzero (msg.dados,2);
+            bzero (msg.dados,15);
         }
     }
     printf ("\t[%d mensagens enviadas]\n\tFim da transferencia do arquivo.\n", i);	//log
@@ -144,61 +145,61 @@ void EnviaArq(int s, unsigned char * path, int type)
 
 void InsereParidade (mensagem_bin *msg_bin)
 {
-    int i; int conta1[4];
-    bzero (msg_bin->erro, TAMERROBIN);
-    bzero (&conta1, sizeof(int)*4);
+    int i; /*int conta1[4];*/
+    // bzero (msg_bin->erro, TAMERROBIN);
+    // bzero (&conta1, sizeof(int)*4);
 
     for (i = 0; i < 4; i++)
-    {
-        if (msg_bin->tamanho[i]==1)      //soma 1's presentes no tamanho
-            conta1[0]++;
-        if (msg_bin->tipo[i]==1)         //soma 1's presentes no tipo
-            conta1[1]++;
-        if (msg_bin->sequencia[i]==1)    //soma 1's presentes na sequencia
-            conta1[2]++;
-        if (msg_bin->dados[i]==1)       //soma 1's presentes nos dados (nao todos)
-            conta1[3]++;
-    }
-    for (i = 0; i < 3; i++)             //insere bit de paridade do tamanho, tipo e sequencia
-        if (!EhImpar(conta1[i]))
-            msg_bin->erro[i]=1;
+    // {
+        msg_bin->erro[i]=0;      //soma 1's presentes no tamanho
+    //         conta1[0]++;
+    //     if (msg_bin->tipo[i]==1)         //soma 1's presentes no tipo
+    //         conta1[1]++;
+    //     if (msg_bin->sequencia[i]==1)    //soma 1's presentes na sequencia
+    //         conta1[2]++;
+    //     if (msg_bin->dados[i]==1)       //soma 1's presentes nos dados (nao todos)
+    //         conta1[3]++;
+    // }
+    // for (i = 0; i < 3; i++)             //insere bit de paridade do tamanho, tipo e sequencia
+    //     if (!EhImpar(conta1[i]))
+    //         msg_bin->erro[i]=1;
 
-    for (i = 4; i<16; i++)              //soma 1's restantes nos dados.
-        if (msg_bin->dados[i]==1)
-            conta1[3]++;
+    // for (i = 4; i<16; i++)              //soma 1's restantes nos dados.
+    //     if (msg_bin->dados[i]==1)
+    //         conta1[3]++;
 
-    if (!EhImpar(conta1[3]))             //insere bit de paridade dos dados
-        msg_bin->erro[3] = 1;
+    // if (!EhImpar(conta1[3]))             //insere bit de paridade dos dados
+    //     msg_bin->erro[3] = 1;
 }
 
 int TemErro (mensagem_bin msg_bin)
 {
-    // tamanho dados tipo sequencia
-    int i; int conta1[4];
-    bzero (&conta1, sizeof(int)*4);
+    // // tamanho dados tipo sequencia
+    // int i; int conta1[4];
+    // bzero (&conta1, sizeof(int)*4);
 
-    for (i = 0; i < 4; i++)
-    {
-        if (msg_bin.erro[i]==1)         // soma bit de erro
-            conta1[i]++;
-        if (msg_bin.tamanho[i]==1)      //soma 1's presentes no tamanho
-            conta1[0]++;
-        if (msg_bin.tipo[i]==1)         //soma 1's presentes no tipo
-            conta1[1]++;
-        if (msg_bin.sequencia[i]==1)    //soma 1's presentes na sequencia
-            conta1[2]++;
-        if (msg_bin.dados[i]==1)       //soma 1's presentes nos dados (nao todos)
-            conta1[3]++;
-    }
-    for (i = 0; i < 3; i++)
-        if (!EhImpar(conta1[i]))         //detecta erro no tamanho, tipo e sequencia
-            return 1;
+    // for (i = 0; i < 4; i++)
+    // {
+    //     if (msg_bin.erro[i]==1)         // soma bit de erro
+    //         conta1[i]++;
+    //     if (msg_bin.tamanho[i]==1)      //soma 1's presentes no tamanho
+    //         conta1[0]++;
+    //     if (msg_bin.tipo[i]==1)         //soma 1's presentes no tipo
+    //         conta1[1]++;
+    //     if (msg_bin.sequencia[i]==1)    //soma 1's presentes na sequencia
+    //         conta1[2]++;
+    //     if (msg_bin.dados[i]==1)       //soma 1's presentes nos dados (nao todos)
+    //         conta1[3]++;
+    // }
+    // for (i = 0; i < 3; i++)
+    //     if (!EhImpar(conta1[i]))         //detecta erro no tamanho, tipo e sequencia
+    //         return 1;
 
-    for (i = 4; i<16; i++)
-        if (msg_bin.dados[i]==1)       //soma restante dos 1's
-            conta1[3]++;
+    // for (i = 4; i<16; i++)
+    //     if (msg_bin.dados[i]==1)       //soma restante dos 1's
+    //         conta1[3]++;
 
-    if (!EhImpar(conta1[3]))             //detecta erro nos dados
-        return 1;
+    // if (!EhImpar(conta1[3]))             //detecta erro nos dados
+    //     return 1;
     return 0;                           //nao tem erro
 }

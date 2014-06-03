@@ -88,10 +88,12 @@ int pot(int base, int exp) {
     return p;
 }
 
-int EhFimTexto (unsigned char *texto)
+int EhFimTexto (unsigned char *texto, int len)
 {
-    if ((texto[0]==0) || (texto[1]==0))
-        return 1;
+    int i;
+    for (i = 0; i < len; i++)
+        if (texto[i]==0)
+            return 1;
     return 0;
 }
 

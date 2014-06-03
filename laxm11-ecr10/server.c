@@ -316,21 +316,21 @@ void EnviaDirAtual (int socket, mensagem msg)
     msg.tamanho=0;
     while ( tamenviar-i > 0)
     {
-        if (msg.tamanho<2)
+        if (msg.tamanho<15)
         {
             msg.dados[(msg.tamanho)++] = enviar[i];
             i++;
         }
-        if ((msg.tamanho==2) || (tamenviar-i == 0))
+        if ((msg.tamanho==15) || (tamenviar-i == 0))
         {
-            if (EhFimTexto(msg.dados))
+            if (EhFimTexto(msg.dados, msg.tamanho))
                 msg.tipo=FIMTXT;
             msg_bin = MensagemToMensagem_bin(msg);
             envia_mensagem_bin (socket, &msg_bin);
             countmsg++;
             // recebe mensagem conferindo se tem erro e manda dnovo caso nessecario
             msg.tamanho=0;
-            bzero (msg.dados,2);
+            bzero (msg.dados,15);
         }
     }
     if (dir==0)

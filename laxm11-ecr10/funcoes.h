@@ -19,5 +19,5 @@ void PressioneEnter ();
 void intTobin(int num, int qtdbits, unsigned char *bin);
 int binToint(unsigned char *bin, int qtdbits);
 int pot(int base, int exp);
-int EhFimTexto (unsigned char *texto);
+int EhFimTexto (unsigned char *texto, int len);
 int EhImpar (int x);

@@ -8,7 +8,7 @@
 #define TAMSEQUENCIABIN 4
 #define TAMTIPOBIN 4
 #define TAMERROBIN 4
-#define TAMDADOSBIN 16
+#define TAMDADOSBIN 120
 
 typedef struct
 {
@@ -24,10 +24,10 @@ typedef struct
 {
 	int tamanho;
 	int tipo;
-	unsigned char dados[2];
+	unsigned char dados[15];
 } mensagem;
 
-#define TAMMSG 40
+#define TAMMSG 144
 #define CD 0
 #define LS 1
 #define PUT 2
