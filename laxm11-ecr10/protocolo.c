@@ -154,61 +154,58 @@ void EnviaArq(int s, unsigned char * path, int type)
 
 void InsereParidade (mensagem_bin *msg_bin)
 {
-    int i; /*int conta1[4];*/
-    // bzero (msg_bin->erro, TAMERROBIN);
-    // bzero (&conta1, sizeof(int)*4);
-
+    int i,j;
     for (i = 0; i < 4; i++)
-    // {
-        msg_bin->erro[i]=0;      //soma 1's presentes no tamanho
-    //         conta1[0]++;
-    //     if (msg_bin->tipo[i]==1)         //soma 1's presentes no tipo
-    //         conta1[1]++;
-    //     if (msg_bin->sequencia[i]==1)    //soma 1's presentes na sequencia
-    //         conta1[2]++;
-    //     if (msg_bin->dados[i]==1)       //soma 1's presentes nos dados (nao todos)
-    //         conta1[3]++;
-    // }
-    // for (i = 0; i < 3; i++)             //insere bit de paridade do tamanho, tipo e sequencia
-    //     if (!EhImpar(conta1[i]))
-    //         msg_bin->erro[i]=1;
-
-    // for (i = 4; i<16; i++)              //soma 1's restantes nos dados.
-    //     if (msg_bin->dados[i]==1)
-    //         conta1[3]++;
-
-    // if (!EhImpar(conta1[3]))             //insere bit de paridade dos dados
-    //     msg_bin->erro[3] = 1;
+        msg_bin->erro[i] = (msg_bin->tamanho[i]) ^ (msg_bin->tipo[i]) ^ (msg_bin->sequencia[i]);
+    unsigned char paridadeDados[4];
+    unsigned char temp[4];
+    bzero (paridadeDados,4);
+    for (i = 0; i < TAMDADOSBIN; i++)
+    {
+        if ((i%4==0) && (i!=0))
+        {
+            for (j=0;j<4;j++)
+                paridadeDados[j]=paridadeDados[j] ^ temp[j];
+            bzero(temp,4);
+            temp[i%4] = msg_bin->dados[i];
+        }
+        else
+            temp[i%4] = msg_bin->dados[i];
+    }
+    for (j=0;j<4;j++)
+    {
+        paridadeDados[j]=paridadeDados[j] ^ temp[j];
+        msg_bin->erro[j]=!(msg_bin->erro[j] ^ paridadeDados[j]);
+    }
 }
 
 int TemErro (mensagem_bin msg_bin)
 {
-    // // tamanho dados tipo sequencia
-    // int i; int conta1[4];
-    // bzero (&conta1, sizeof(int)*4);
-
-    // for (i = 0; i < 4; i++)
-    // {
-    //     if (msg_bin.erro[i]==1)         // soma bit de erro
-    //         conta1[i]++;
-    //     if (msg_bin.tamanho[i]==1)      //soma 1's presentes no tamanho
-    //         conta1[0]++;
-    //     if (msg_bin.tipo[i]==1)         //soma 1's presentes no tipo
-    //         conta1[1]++;
-    //     if (msg_bin.sequencia[i]==1)    //soma 1's presentes na sequencia
-    //         conta1[2]++;
-    //     if (msg_bin.dados[i]==1)       //soma 1's presentes nos dados (nao todos)
-    //         conta1[3]++;
-    // }
-    // for (i = 0; i < 3; i++)
-    //     if (!EhImpar(conta1[i]))         //detecta erro no tamanho, tipo e sequencia
-    //         return 1;
-
-    // for (i = 4; i<16; i++)
-    //     if (msg_bin.dados[i]==1)       //soma restante dos 1's
-    //         conta1[3]++;
-
-    // if (!EhImpar(conta1[3]))             //detecta erro nos dados
-    //     return 1;
+    int i,j;
+    char erro[4];
+    for (i = 0; i < 4; i++)
+        erro[i] = (msg_bin.tamanho[i]) ^ (msg_bin.tipo[i]) ^ (msg_bin.sequencia[i]);
+    unsigned char paridadeDados[4];
+    unsigned char temp[4];
+    bzero (paridadeDados,4);
+    for (i = 0; i < TAMDADOSBIN; i++)
+    {
+        if ((i%4==0) && (i!=0))
+        {
+            for (j=0;j<4;j++)
+                paridadeDados[j]=paridadeDados[j] ^ temp[j];
+            bzero(temp,4);
+            temp[i%4] = msg_bin.dados[i];
+        }
+        else
+            temp[i%4] = msg_bin.dados[i];
+    }
+    for (j=0;j<4;j++)
+    {
+        paridadeDados[j]=paridadeDados[j] ^ temp[j];
+        erro[j]=!(erro[j] ^ paridadeDados[j]) ^ msg_bin.erro[j];
+        if (erro[j]!=0)
+            return 1;
+    }
     return 0;                           //nao tem erro
 }
