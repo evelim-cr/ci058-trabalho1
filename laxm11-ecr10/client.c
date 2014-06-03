@@ -105,6 +105,11 @@ void cdRemoto (int socket, unsigned char *path)
 {
     mensagem msg;
     mensagem_bin msg_bin;
+    msg.tipo = CD;
+    msg.tamanho = 0;
+    bzero (msg.dados, 15);
+    msg_bin = MensagemToMensagem_bin(msg);
+    envia_mensagem_bin (socket, &msg_bin);
     int i=0, j;
     msg.tipo = CD;
     msg.tamanho = 0;
@@ -160,6 +165,11 @@ void lsRemoto (int s)
 {
     mensagem msg;
     mensagem_bin msg_bin;
+    msg.tipo = LS;
+    msg.tamanho = 0;
+    bzero (msg.dados, 15);
+    msg_bin = MensagemToMensagem_bin(msg);
+    envia_mensagem_bin (s, &msg_bin);
     msg.tipo = LS;
     printf ("Digite os argumentos do ls remoto:\n? ls ");
     int tamargs, i=0, j;
@@ -229,6 +239,11 @@ void catRemoto(int s)
 {
     mensagem msg;
     mensagem_bin msg_bin;
+    msg.tipo = CAT;
+    msg.tamanho = 0;
+    bzero (msg.dados, 15);
+    msg_bin = MensagemToMensagem_bin(msg);
+    envia_mensagem_bin (s, &msg_bin);
     printf("Digite os argumentos do cat:\n? cat ");
     int tamargs;
     unsigned char *catArgs=LerStringDin(&tamargs), *resposta=NULL;
@@ -344,6 +359,11 @@ void put(int s)
 {
     mensagem msg;
     mensagem_bin msg_bin;
+    msg.tipo = PUT;
+    msg.tamanho = 0;
+    bzero (msg.dados, 15);
+    msg_bin = MensagemToMensagem_bin(msg);
+    envia_mensagem_bin (s, &msg_bin);
     int i=0;
     int tamfilename;
     msg.tipo = PUT;

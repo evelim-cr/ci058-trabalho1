@@ -5,7 +5,9 @@ mensagem_bin MensagemToMensagem_bin (mensagem msg)
 {
     int i;
 	mensagem_bin mbin;
-	strcpy (mbin.inicio,"11101110");
+    memset(mbin.inicio, 1, 8);
+    mbin.inicio[3]=0;
+    mbin.inicio[7]=0;
 	intTobin(msg.tamanho,TAMTAMANHOBIN,mbin.tamanho);
     bzero (mbin.sequencia,TAMSEQUENCIABIN);
 	intTobin(msg.tipo, TAMTIPOBIN, mbin.tipo);
@@ -34,9 +36,12 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
     mensagem msg;
     mensagem_bin acknack;
-    do
+    char inicio[8];
+    memset(inicio, 1, 8);
+    inicio[3]=0;
+    inicio[7]=0;
     {
-        if ((send (socket, msg_bin, TAMMSG,0)==TAMMSG) && (strcmp(msg_bin->inicio, "11101110")==0))
+        if ((send (socket, msg_bin, TAMMSG,0)==TAMMSG) && (memcmp(msg_bin->inicio, inicio,8)==0))
         {
             recebe_acknack(socket, &acknack);
             msg = Mensagem_binToMensagem(acknack);
@@ -52,9 +57,13 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin)
 	// while ( (recv (socket, msg_bin, TAMMSG,0)!=TAMMSG) && (strcmp(msg_bin->inicio, "11101110")!=0));
     mensagem msg;
     mensagem_bin acknack;
+    char inicio[8];
+    memset(inicio, 1, 8);
+    inicio[3]=0;
+    inicio[7]=0;
     while (1)
     {
-        if ( (recv (socket, msg_bin, TAMMSG,0)==TAMMSG) && (strcmp(msg_bin->inicio, "11101110")==0))
+        if ( (recv (socket, msg_bin, TAMMSG,0)==TAMMSG) && (memcmp(msg_bin->inicio, inicio,8))==0)
         {
             if (TemErro(*msg_bin))
             {
