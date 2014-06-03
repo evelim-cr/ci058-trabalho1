@@ -417,10 +417,9 @@ void put(int s)
         }
     }
     do
-    {
         recebe_mensagem_bin (s, &msg_bin, seq);
-        incrementa_sequencia(&seq);
-    }while ((msg.tipo==ACK) || (msg.tipo==NACK));
+    while ((msg.tipo==ACK) || (msg.tipo==NACK));
+    incrementa_sequencia(&seq);
     msg = Mensagem_binToMensagem(msg_bin);
     if (msg.tipo == SUCESSO)
         EnviaArq (s, filename, PUT, &seq);

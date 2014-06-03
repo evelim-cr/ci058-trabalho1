@@ -262,7 +262,7 @@ void putServer (int s, mensagem msg)
 		bzero (&msg_bin, TAMMSG);
 		if (msg.tipo==FIMTXT){ //recebeu o nome do arquivo com sucesso, envia uma msg com o tipo sucesso para 
 			acabou=1;
-			msg.tipo==SUCESSO;
+			msg.tipo=SUCESSO;
 			msg.sequencia = seq;
 			incrementa_sequencia(&seq);
 			msg_bin = MensagemToMensagem_bin(msg);
@@ -300,6 +300,8 @@ void putServer (int s, mensagem msg)
             incrementa_sequencia(&seq);
             msg = Mensagem_binToMensagem(msg_bin);
         }
+        if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
+            puts ("Erro na escrita em arquivo.");
         puts ("Arquivo copiado com sucesso.");
         unsigned char mode[] = "0777";
         chmod (filename,strtol(mode, 0, 8));
