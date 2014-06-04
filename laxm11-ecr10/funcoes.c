@@ -106,10 +106,10 @@ int EhImpar (int x)
 
 void incrementa_sequencia(int *seq)
 {
-    if (*seq < 7)
-        *seq++;
+    if ((*seq) < 7)
+        (*seq)++;
     else
-        *seq = 0;
+        (*seq) = 0;
 }
 
 int EhSequenciaEsperada (unsigned char *seqbin, int seq)

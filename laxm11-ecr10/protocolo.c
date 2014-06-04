@@ -35,20 +35,21 @@ mensagem Mensagem_binToMensagem (mensagem_bin msg_bin)
 void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
 {
     mensagem msg;
-    mensagem_bin acknack;
     char inicio[8];
     memset(inicio, 1, 8);
     inicio[3]=0;
     inicio[7]=0;
-    {
+    int resposta=NACK, tentativa=0;
+    do{
         if ((send (socket, msg_bin, TAMMSG,0)==TAMMSG) && (memcmp(msg_bin->inicio, inicio,8)==0))
-        {
-            recebe_acknack(socket, &acknack);
-            msg = Mensagem_binToMensagem(acknack);
-        }
+            recebe_acknack(socket, &resposta);
         else
-            msg.tipo=NACK;
-    } while(msg.tipo==NACK);
+            resposta=NACK;
+        if (resposta==TIMEOUT)
+            tentativa++;
+        else
+            tentativa=0;
+    } while( (tentativa<16) && ((resposta==NACK) || (resposta==TIMEOUT)) );
 }
 
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin, int seq)
@@ -90,10 +91,48 @@ void envia_acknack (int socket, mensagem_bin *acknack)
             puts ("Erro ao enviar ACK ou NACK");
 }
 
-void recebe_acknack (int socket, mensagem_bin *acknack)
+void recebe_acknack (int socket, int *resposta)
 {
-    mensagem msg = Mensagem_binToMensagem(*acknack);
-    while ( (recv (socket, acknack, TAMMSG,0)!=TAMMSG) && (strcmp(acknack->inicio, "11101110")!=0) && ((msg.tipo!=ACK) || (msg.tipo!=NACK)) );
+    mensagem msg;
+    mensagem_bin msg_bin;
+
+    struct pollfd p;
+    p.fd = socket;
+    p.events = POLLIN;
+
+    int rPoll = poll(&p,1,1000);
+
+    switch(rPoll)
+    {
+        case 0:
+        {
+            printf(RED"Timeout!\n"NRM);
+            (*resposta)=TIMEOUT;
+            break;
+        }
+        case -1:
+        {
+            printf("Erro no poll\n");
+            exit(-1);
+            break;
+        }
+        default:
+        {
+            if (p.revents==POLLIN)
+            {
+                if ((recv (socket, &msg_bin, TAMMSG,0)==TAMMSG) && (strcmp(msg_bin.inicio, "11101110")==0) && ((msg.tipo==ACK) || (msg.tipo==NACK)))
+                {
+                    if (TemErro(msg_bin))
+                        (*resposta)=NACK;
+                    else
+                        (*resposta)=ACK;
+                }
+                else
+                    (*resposta)=NACK;
+            }
+            break;
+        }
+    }
 }
 
 void EnviaArq(int s, unsigned char * path, int type, int *seq)

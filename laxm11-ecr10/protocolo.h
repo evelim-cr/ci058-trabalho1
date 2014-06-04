@@ -2,6 +2,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <poll.h>
 
 #define TAMINICIOBIN 8
 #define TAMTAMANHOBIN 4
@@ -35,6 +36,7 @@ typedef struct
 #define GET 3
 #define CAT 4
 #define DIR_ATUAL 5
+#define TIMEOUT 6
 #define DADOS 7
 #define TAMARQ 8
 #define MOSTRA 9
@@ -52,4 +54,4 @@ void EnviaArq(int s, unsigned char * path, int type, int *seq);
 void InsereParidade (mensagem_bin *msg_bin);
 int TemErro (mensagem_bin msg_bin);
 void envia_acknack (int socket, mensagem_bin *acknack);
-void recebe_acknack (int socket, mensagem_bin *acknack);
+void recebe_acknack (int socket, int *resposta);
