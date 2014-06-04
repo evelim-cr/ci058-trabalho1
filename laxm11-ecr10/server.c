@@ -283,32 +283,36 @@ void putServer (int s, mensagem msg)
 	if (msg.tipo!=ERRO)
     {
         if (msg.tipo==TAMARQ)
-            printf("Tamanho do arquivo: %uB.\n", msg.dados[0]);
+        {
+        	int fptam;
+        	memcpy (&fptam, msg.dados, 8);
+            printf("\tTamanho do arquivo: %d Bytes.\n",fptam);
+        }
         
         recebe_mensagem_bin(s, &msg_bin, seq);
         incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);
         if ((dest = fopen (filename,"w+b"))==NULL)
         {
-            printf ("Erro ao abrir ou criar o arquivo "); puts (filename);
+            printf ("\tErro ao abrir ou criar o arquivo "); puts (filename);
         }
         while (msg.tipo!=FIMTXT)
         {
             if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
-                puts ("Erro na escrita em arquivo.");
+                puts ("\tErro na escrita em arquivo.");
             recebe_mensagem_bin(s, &msg_bin,seq);
             incrementa_sequencia(&seq);
             msg = Mensagem_binToMensagem(msg_bin);
         }
         if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
-            puts ("Erro na escrita em arquivo.");
-        puts ("Arquivo copiado com sucesso.");
+            puts ("\tErro na escrita em arquivo.");
+        puts ("\tArquivo copiado com sucesso.");
         unsigned char mode[] = "0777";
         chmod (filename,strtol(mode, 0, 8));
         fclose (dest);
     }
     else
-        puts ("Erro ao receber arquivo.");
+        puts ("\tErro ao receber arquivo.");
     free (filename);
 }
 

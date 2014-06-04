@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <poll.h>
 
@@ -55,3 +56,4 @@ void InsereParidade (mensagem_bin *msg_bin);
 int TemErro (mensagem_bin msg_bin);
 void envia_acknack (int socket, mensagem_bin *acknack);
 void recebe_acknack (int socket, int *resposta);
+void LimpaSocket (int socket);

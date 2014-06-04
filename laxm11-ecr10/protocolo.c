@@ -49,7 +49,7 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
             tentativa++;
         else
             tentativa=0;
-    } while( (tentativa<16) && ((resposta==NACK) || (resposta==TIMEOUT)) );
+    } while( /*(tentativa<16) && */((resposta==NACK) || (resposta==TIMEOUT)) );
     if (tentativa >= 16)
     {
         printf("Encerrando...\n"NRM);
@@ -166,18 +166,19 @@ void EnviaArq(int s, unsigned char * path, int type, int *seq)
 
     if ( (type==GET) || (type==PUT) )   // se eh GET ou PUT, envia mensagem com tamanho do arquivo.
     {
-	    fseek(fp, 0L, SEEK_END);
-	    unsigned int tamfp = ftell(fp);	// fazer barra de progresso
-	    int i=0;
-	    rewind (fp);
-	    msg.tipo = TAMARQ;
-	    msg.tamanho = 1;
+        struct stat st;
+        if (stat(path, &st))
+            printf("\tERRO ao tentar obter stat de %s\n", path);
+        int fptam = (int) st.st_size;
+        int i=0;
+        msg.tipo = TAMARQ;
+        msg.tamanho = 8;
         msg.sequencia = *seq;
         incrementa_sequencia(seq);
-	    msg.dados[0] = tamfp;
+        memcpy(msg.dados,&fptam,8);
 	    msg_bin = MensagemToMensagem_bin(msg);
 	    envia_mensagem_bin(s, &msg_bin);
-	    printf("\tTamanho do arquivo: %uB.\n", tamfp);
+	    printf("\tTamanho do arquivo: %d Bytes.\n", fptam);
     }
 
     msg.tipo=MOSTRA;
@@ -261,4 +262,20 @@ int TemErro (mensagem_bin msg_bin)
             return 1;
     }
     return 0;                           //nao tem erro
+}
+
+void LimpaSocket (int socket)
+{
+    struct pollfd p;
+    p.fd = socket;
+    p.events = POLLIN;
+    mensagem_bin lixo;
+    int i=0;
+    int rPoll;
+    rPoll = poll(&p,1,0);
+    while ( p.revents==POLLIN )
+    {
+        recv(socket, &lixo, TAMMSG,0);
+        rPoll = poll(&p,1,0);
+    }
 }

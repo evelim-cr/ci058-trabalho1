@@ -24,7 +24,6 @@ int main(int argc, unsigned char const *argv[])
 {
     int s = criaConexao();
     int tamStr;
-    // FILE *infile = fopen ("teste.txt","r");
     exibeMenu(s);
     int op=LeOpcao(1,9);
     while (op!=9)
@@ -88,7 +87,6 @@ int main(int argc, unsigned char const *argv[])
         exibeMenu(s);
         op=LeOpcao(1,9);
     }
-    // fclose (infile);
     return 0;
 }
 
@@ -351,30 +349,36 @@ void get(int s)
     if (msg.tipo!=ERRO)
     {
         if (msg.tipo==TAMARQ)
-            printf("Tamanho do arquivo: %uB.\n", msg.dados[0]);
+        {
+            int fptam;
+            memcpy (&fptam, msg.dados, 8);
+            printf("\tTamanho do arquivo: %d Bytes.\n",fptam);
+        }
         
         recebe_mensagem_bin(s, &msg_bin, seq);
         incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);
         if ((dest = fopen (filename,"w+b"))==NULL)
         {
-            printf ("Erro ao abrir ou criar o arquivo "); puts (filename);
+            printf ("\tErro ao abrir ou criar o arquivo "); puts (filename);
         }
         while (msg.tipo!=FIMTXT)
         {
             if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
-                puts ("Erro na escrita em arquivo.");
+                puts ("\tErro na escrita em arquivo.");
             recebe_mensagem_bin(s, &msg_bin, seq);
             incrementa_sequencia(&seq);
             msg = Mensagem_binToMensagem(msg_bin);
         }
-        puts ("Arquivo copiado com sucesso.");
+        if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
+                puts ("\tErro na escrita em arquivo.");
+        puts ("\tArquivo copiado com sucesso.");
         unsigned char mode[] = "0777";
         chmod (filename,strtol(mode, 0, 8));
         fclose (dest);
     }
     else
-        puts ("Erro ao receber arquivo.");
+        puts ("\tErro ao receber arquivo.");
     free (filename);
 }
 
@@ -427,9 +431,14 @@ void put(int s)
 
 void exibeMenu(int socket)
 {
+    LimpaSocket(socket);
+    system ("clear");
+    puts ("Requisitando Diretorio Remoto Atual...");
+    char *dirRemoto = DirAtualRemoto(socket);
+    LimpaSocket(socket);
     system ("clear");
     printf(YEL "Diretório Local: "); puts (DirAtualLocal()); printf(NRM);
-    printf(YEL "Diretório Remoto: "); puts (DirAtualRemoto(socket)); printf(NRM);
+    printf(YEL "Diretório Remoto: "); puts (dirRemoto); printf(NRM);
     printf
         (BLU "\t+-----------"YEL"Client"BLU"----------+\n"
          BLU "\t|                           |\n" NRM
