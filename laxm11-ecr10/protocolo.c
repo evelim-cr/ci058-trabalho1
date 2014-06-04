@@ -50,6 +50,12 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
         else
             tentativa=0;
     } while( (tentativa<16) && ((resposta==NACK) || (resposta==TIMEOUT)) );
+    if (tentativa >= 16)
+    {
+        printf("Encerrando...\n"NRM);
+        exit(-1);
+    }
+
 }
 
 void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin, int seq)
@@ -96,6 +102,11 @@ void recebe_acknack (int socket, int *resposta)
     mensagem msg;
     mensagem_bin msg_bin;
 
+    char inicio[8];
+    memset(inicio, 1, 8);
+    inicio[3]=0;
+    inicio[7]=0;
+
     struct pollfd p;
     p.fd = socket;
     p.events = POLLIN;
@@ -120,7 +131,7 @@ void recebe_acknack (int socket, int *resposta)
         {
             if (p.revents==POLLIN)
             {
-                if ((recv (socket, &msg_bin, TAMMSG,0)==TAMMSG) && (strcmp(msg_bin.inicio, "11101110")==0) && ((msg.tipo==ACK) || (msg.tipo==NACK)))
+                if ((recv (socket, &msg_bin, TAMMSG,0)==TAMMSG) && ((memcmp(msg_bin.inicio, inicio,8))==0))
                 {
                     if (TemErro(msg_bin))
                         (*resposta)=NACK;
