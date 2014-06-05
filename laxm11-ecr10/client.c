@@ -134,15 +134,11 @@ void cdRemoto (int socket, unsigned char *path)
             bzero (msg.dados,15);
         }
     }
-    seq=0;
     recebe_mensagem_bin(socket, &msg_bin, seq);
     msg = Mensagem_binToMensagem(msg_bin);
     int resposta = (int) msg.dados[0];  //ou atoi
     if (resposta)
-    {
         printf(RED "Mudanca de diretorio falhou!\n" NRM);
-        PressioneEnter();
-    }
 
 }
 
@@ -346,11 +342,11 @@ void get(int s)
     incrementa_sequencia(&seq);
     msg = Mensagem_binToMensagem(msg_bin);
     FILE *dest;
+    int fptam;
     if (msg.tipo!=ERRO)
     {
         if (msg.tipo==TAMARQ)
         {
-            int fptam;
             memcpy (&fptam, msg.dados, 8);
             printf("\tTamanho do arquivo: %d Bytes.\n",fptam);
         }
@@ -362,20 +358,28 @@ void get(int s)
         {
             printf ("\tErro ao abrir ou criar o arquivo "); puts (filename);
         }
-        while (msg.tipo!=FIMTXT)
+        else
         {
+            i=0;
+            puts ("\tRecebendo arquivo.");
+            while (msg.tipo!=FIMTXT)
+            {
+                loadBar(i,(int)(fptam/15),200,50);
+                if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
+                    puts ("\tErro na escrita em arquivo.");
+                recebe_mensagem_bin(s, &msg_bin, seq);
+                incrementa_sequencia(&seq);
+                msg = Mensagem_binToMensagem(msg_bin);
+                i++;
+            }
             if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
-                puts ("\tErro na escrita em arquivo.");
-            recebe_mensagem_bin(s, &msg_bin, seq);
-            incrementa_sequencia(&seq);
-            msg = Mensagem_binToMensagem(msg_bin);
+                    puts ("\tErro na escrita em arquivo.");
+            loadBar(1,1,200,50);
+            puts ("\tArquivo copiado com sucesso.");
+            unsigned char mode[] = "0777";
+            chmod (filename,strtol(mode, 0, 8));
+            fclose (dest);
         }
-        if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
-                puts ("\tErro na escrita em arquivo.");
-        puts ("\tArquivo copiado com sucesso.");
-        unsigned char mode[] = "0777";
-        chmod (filename,strtol(mode, 0, 8));
-        fclose (dest);
     }
     else
         puts ("\tErro ao receber arquivo.");

@@ -23,3 +23,4 @@ int EhFimTexto (unsigned char *texto, int len);
 int EhImpar (int x);
 void incrementa_sequencia(int *seq);
 int EhSequenciaEsperada (unsigned char *seqbin, int seq);
+void loadBar(int x, int n, int r, int w);

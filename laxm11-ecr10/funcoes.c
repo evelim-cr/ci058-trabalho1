@@ -120,3 +120,29 @@ int EhSequenciaEsperada (unsigned char *seqbin, int seq)
    else
         return 0;      
 }
+void loadBar(int x, int n, int r, int w)
+{
+    // Only update r times.
+    if ( x % (n/r +1) != 0 ) return;
+ 
+    // Calculuate the ratio of complete-to-incomplete.
+    float ratio = x/(float)n;
+    int c = ratio * w;
+ 
+    // Show the percentage complete.
+    printf("%3d%% [", (int)(ratio*100) );
+ 
+    // Show the load bar.
+    for (x=0; x<c; x++)
+       printf("=");
+ 
+    for (x=c; x<w; x++)
+       printf(" ");
+ 
+    // ANSI Control codes to go back to the
+    // previous line and clear it.
+    if ((int)(ratio*100)!=100)
+        printf("]\n\033[F\033[J");
+    else
+        printf("]\n");
+}

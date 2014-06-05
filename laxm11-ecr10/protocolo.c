@@ -49,7 +49,7 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
             tentativa++;
         else
             tentativa=0;
-    } while( /*(tentativa<16) && */((resposta==NACK) || (resposta==TIMEOUT)) );
+    } while( (tentativa<16) && ((resposta==NACK) || (resposta==TIMEOUT)) );
     if (tentativa >= 16)
     {
         printf("Encerrando...\n"NRM);
@@ -163,14 +163,12 @@ void EnviaArq(int s, unsigned char * path, int type, int *seq)
         envia_mensagem_bin (s, &msg_bin);
         return;
     }
-
+    struct stat st;
+    if (stat(path, &st))
+        printf("\tERRO ao tentar obter stat de %s\n", path);
+    int fptam = (int) st.st_size;
     if ( (type==GET) || (type==PUT) )   // se eh GET ou PUT, envia mensagem com tamanho do arquivo.
     {
-        struct stat st;
-        if (stat(path, &st))
-            printf("\tERRO ao tentar obter stat de %s\n", path);
-        int fptam = (int) st.st_size;
-        int i=0;
         msg.tipo = TAMARQ;
         msg.tamanho = 8;
         msg.sequencia = *seq;
@@ -188,11 +186,15 @@ void EnviaArq(int s, unsigned char * path, int type, int *seq)
 	puts ("\tInicio da transferencia do arquivo.");	//log
     while (!feof(fp))
     {
+        loadBar(i,(int)(fptam/15),200,50);
         if (msg.tamanho<15)
             fread (&(msg.dados[(msg.tamanho)++]), sizeof(unsigned char), 1, fp);
         if( (msg.tamanho == 15) || (feof(fp)) ){
             if (feof(fp))
+            {
                 msg.tipo=FIMTXT;
+                loadBar(1,1,200,50);
+            }
             msg.sequencia=*seq;
             incrementa_sequencia(seq);
             msg_bin = MensagemToMensagem_bin(msg);

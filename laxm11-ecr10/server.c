@@ -296,20 +296,28 @@ void putServer (int s, mensagem msg)
         {
             printf ("\tErro ao abrir ou criar o arquivo "); puts (filename);
         }
-        while (msg.tipo!=FIMTXT)
+        else
         {
-            if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
-                puts ("\tErro na escrita em arquivo.");
-            recebe_mensagem_bin(s, &msg_bin,seq);
-            incrementa_sequencia(&seq);
-            msg = Mensagem_binToMensagem(msg_bin);
+            i=0;
+            puts ("\tRecebendo arquivo.");
+	        while (msg.tipo!=FIMTXT)
+	        {
+	        	loadBar(i,(int)(fptam/15),200,50);
+	            if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
+	                puts ("\tErro na escrita em arquivo.");
+	            recebe_mensagem_bin(s, &msg_bin,seq);
+	            incrementa_sequencia(&seq);
+	            msg = Mensagem_binToMensagem(msg_bin);
+	            i++;
+	        }
+	        if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
+	            puts ("\tErro na escrita em arquivo.");
+	        loadBar(1,1,200,50);
+	        puts ("\tArquivo copiado com sucesso.");
+	        unsigned char mode[] = "0777";
+	        chmod (filename,strtol(mode, 0, 8));
+	        fclose (dest);
         }
-        if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
-            puts ("\tErro na escrita em arquivo.");
-        puts ("\tArquivo copiado com sucesso.");
-        unsigned char mode[] = "0777";
-        chmod (filename,strtol(mode, 0, 8));
-        fclose (dest);
     }
     else
         puts ("\tErro ao receber arquivo.");
