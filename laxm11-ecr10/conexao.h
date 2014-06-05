@@ -8,6 +8,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define DEVICE "eth0"
+#define DEVICE "eth2"
 
 int criaConexao();

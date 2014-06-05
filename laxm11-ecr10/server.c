@@ -112,7 +112,7 @@ void lsRemotoServer(int socket, mensagem msg)
 		}
 	}
 	printf ("\t[%d mensagens recebidas]\n\tComando recebido: ", countmsg); puts (comando);	//log
-	comando = realloc (comando, i+11);
+	comando = realloc (comando, i+23);
 	i--;
 	comando[i++]=' ';
 	comando[i++]='>';
@@ -125,6 +125,18 @@ void lsRemotoServer(int socket, mensagem msg)
 	comando[i++]='t';
 	comando[i++]='m';
 	comando[i++]='p';
+	comando[i++]=' ';
+	comando[i++]='2';
+	comando[i++]='>';
+	comando[i++]='/';
+	comando[i++]='d';
+	comando[i++]='e';
+	comando[i++]='v';
+	comando[i++]='/';
+	comando[i++]='n';
+	comando[i++]='u';
+	comando[i++]='l';
+	comando[i++]='l';
 	comando[i]='\0';
 	system (comando);
 	puts ("\tResposta armazenada no arquivo '.file.tmp'.");	//log
@@ -150,6 +162,7 @@ void cdRemotoServer (int socket, mensagem msg)
 		else
 		{
 			recebe_mensagem_bin (socket, &msg_bin, seq);
+			incrementa_sequencia(&seq);
 			msg = Mensagem_binToMensagem(msg_bin);
 			countmsg++;
 		}
@@ -168,7 +181,7 @@ void cdRemotoServer (int socket, mensagem msg)
 	}
 	msg.tamanho=1;
 	msg.dados[0]=enviar;
-	msg.sequencia=0;
+	msg.sequencia=seq;
 	msg_bin = MensagemToMensagem_bin(msg);
 	envia_mensagem_bin (socket, &msg_bin);
 	puts ("\tPronto!");	//log
@@ -280,15 +293,16 @@ void putServer (int s, mensagem msg)
 	incrementa_sequencia(&seq);
     msg = Mensagem_binToMensagem(msg_bin);
     FILE *dest;
+    char *temp = filename;
 	if (msg.tipo!=ERRO)
     {
+    	int fptam;
         if (msg.tipo==TAMARQ)
         {
-        	int fptam;
         	memcpy (&fptam, msg.dados, 8);
             printf("\tTamanho do arquivo: %d Bytes.\n",fptam);
         }
-        
+        filename = temp;
         recebe_mensagem_bin(s, &msg_bin, seq);
         incrementa_sequencia(&seq);
         msg = Mensagem_binToMensagem(msg_bin);

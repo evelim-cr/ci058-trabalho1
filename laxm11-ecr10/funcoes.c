@@ -141,7 +141,7 @@ void loadBar(int x, int n, int r, int w)
  
     // ANSI Control codes to go back to the
     // previous line and clear it.
-    if ((int)(ratio*100)!=100)
+    if ((ratio*100)!=100)
         printf("]\n\033[F\033[J");
     else
         printf("]\n");
