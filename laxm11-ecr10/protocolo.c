@@ -186,15 +186,12 @@ void EnviaArq(int s, unsigned char * path, int type, int *seq)
 	puts ("\tInicio da transferencia do arquivo.");	//log
     while (!feof(fp))
     {
-        loadBar(i,(int)(fptam/15),200,50);
         if (msg.tamanho<15)
             fread (&(msg.dados[(msg.tamanho)++]), sizeof(unsigned char), 1, fp);
         if( (msg.tamanho == 15) || (feof(fp)) ){
+            loadBar(i,(fptam/15),fptam,50);
             if (feof(fp))
-            {
                 msg.tipo=FIMTXT;
-                loadBar(1,1,200,50);
-            }
             msg.sequencia=*seq;
             incrementa_sequencia(seq);
             msg_bin = MensagemToMensagem_bin(msg);

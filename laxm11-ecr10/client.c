@@ -364,7 +364,7 @@ void get(int s)
             puts ("\tRecebendo arquivo.");
             while (msg.tipo!=FIMTXT)
             {
-                loadBar(i,(int)(fptam/15),200,50);
+                loadBar(i,(fptam/15),fptam,50);
                 if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
                     puts ("\tErro na escrita em arquivo.");
                 recebe_mensagem_bin(s, &msg_bin, seq);
@@ -374,7 +374,7 @@ void get(int s)
             }
             if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
                     puts ("\tErro na escrita em arquivo.");
-            loadBar(1,1,200,50);
+            loadBar(1,1,fptam,50);
             puts ("\tArquivo copiado com sucesso.");
             unsigned char mode[] = "0777";
             chmod (filename,strtol(mode, 0, 8));
