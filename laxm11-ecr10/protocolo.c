@@ -197,10 +197,11 @@ void EnviaArq(int s, unsigned char * path, int type, int *seq)
         msg.tamanho = 8;
         msg.sequencia = *seq;
         incrementa_sequencia(seq);
-        memcpy(msg.dados,&fptam,8);
+        // memcpy(msg.dados,&fptam,8);
+        snprintf(msg.dados,15,"0x%x",fptam);
 	    msg_bin = MensagemToMensagem_bin(msg);
 	    envia_mensagem_bin(s, &msg_bin);
-	    printf("\tTamanho do arquivo: %d Bytes.\n", fptam);
+	    printf("\tTamanho do arquivo: 0x%x Bytes.\n", fptam);
     }
 
     msg.tipo=MOSTRA;

@@ -338,7 +338,7 @@ void get(int s)
         }
     }
 
-    recebe_mensagem_bin(s, &msg_bin, seq);
+    recebe_mensagem_bin(s, &msg_bin, seq);  // Msg. com tamanho do arquivo
     incrementa_sequencia(&seq);
     msg = Mensagem_binToMensagem(msg_bin);
     FILE *dest;
@@ -347,8 +347,9 @@ void get(int s)
     {
         if (msg.tipo==TAMARQ)
         {
-            memcpy (&fptam, msg.dados, 8);
-            printf("\tTamanho do arquivo: %d Bytes.\n",fptam);
+            // memcpy (&fptam, msg.dados, 8);
+            fptam = strtol(msg.dados, NULL, 16);
+            printf("\tTamanho do arquivo: 0x%x Bytes.\n",fptam);
         }
         
         recebe_mensagem_bin(s, &msg_bin, seq);
@@ -372,7 +373,7 @@ void get(int s)
                 msg = Mensagem_binToMensagem(msg_bin);
                 i++;
             }
-            if (fwrite (msg.dados, 1, msg.tamanho, dest)!=msg.tamanho)
+            if (fwrite (msg.dados, 1, (msg.tamanho-1), dest)!=(msg.tamanho-1))
                     puts ("\tErro na escrita em arquivo.");
             loadBar(1,1,fptam,50);
             puts ("\tArquivo copiado com sucesso.");
