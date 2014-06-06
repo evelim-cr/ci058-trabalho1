@@ -46,7 +46,7 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
         else
             resposta=NACK;
         if (resposta==TIMEOUT)
-            tentativa++;
+            printf ("%d\n",tentativa++);
         else
             tentativa=0;
     } while( (tentativa<16) && ((resposta==NACK) || (resposta==TIMEOUT)) );
@@ -117,7 +117,7 @@ void recebe_acknack (int socket, int *resposta)
     {
         case 0:
         {
-            printf(RED"Timeout!\n"NRM);
+            printf(RED"Timeout! "NRM);
             (*resposta)=TIMEOUT;
             break;
         }
