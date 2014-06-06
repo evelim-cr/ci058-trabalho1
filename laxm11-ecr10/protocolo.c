@@ -45,11 +45,15 @@ void envia_mensagem_bin (int socket, mensagem_bin *msg_bin)
             recebe_acknack(socket, &resposta);
         else
             resposta=NACK;
+
         if (resposta==TIMEOUT)
             printf ("%d\n",tentativa++);
+        else if (resposta==SYNCSEQ)
+            break;
         else
-            tentativa=0;
-    } while( (tentativa<16) && ((resposta==NACK) || (resposta==TIMEOUT)) );
+            tentativa=0;    //LIXO OU NACK
+
+    } while( (tentativa<16) && ((resposta==NACK) || (resposta==TIMEOUT) || resposta==LIXO) );
     if (tentativa >= 16)
     {
         printf("Encerrando...\n"NRM);
@@ -68,7 +72,7 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin, int seq)
     inicio[7]=0;
     while (1)
     {
-        if ( (recv (socket, msg_bin, TAMMSG,0)==TAMMSG) && ((memcmp(msg_bin->inicio, inicio,8))==0) && EhSequenciaEsperada(msg_bin->sequencia,seq))
+        if ( (recv (socket, msg_bin, TAMMSG,0)==TAMMSG) && ((memcmp(msg_bin->inicio, inicio,8))==0))
         {
             if (TemErro(*msg_bin))
             {
@@ -80,12 +84,23 @@ void recebe_mensagem_bin (int socket, mensagem_bin *msg_bin, int seq)
             }
             else
             {
-                msg.tipo=ACK;
-                msg.tamanho=0;
-                bzero(msg.dados,15);
-                acknack = MensagemToMensagem_bin(msg);
-                envia_acknack (socket, &acknack);
-                break;
+                if (EhSequenciaEsperada(msg_bin->sequencia,seq))
+                {
+                    msg.tipo=ACK;
+                    msg.tamanho=0;
+                    bzero(msg.dados,15);
+                    acknack = MensagemToMensagem_bin(msg);
+                    envia_acknack (socket, &acknack);
+                    break;
+                }
+                else
+                {
+                    msg.tipo=NACK;
+                    msg.tamanho=sizeof(int);
+                    memcpy (msg.dados, &seq, sizeof(int));
+                    acknack = MensagemToMensagem_bin(msg);
+                    envia_acknack (socket, &acknack);
+                }
             }
         }
     }
@@ -136,10 +151,19 @@ void recebe_acknack (int socket, int *resposta)
                     if (TemErro(msg_bin))
                         (*resposta)=NACK;
                     else
-                        (*resposta)=ACK;
+                    {
+                        msg = Mensagem_binToMensagem(msg_bin);
+                        if (msg.tipo==NACK)
+                            if (msg.tamanho==sizeof(int))
+                                (*resposta)=SYNCSEQ;
+                            else
+                                (*resposta=NACK);
+                        else
+                            (*resposta)=ACK;
+                    }
                 }
                 else
-                    (*resposta)=NACK;
+                    (*resposta)=LIXO;
             }
             break;
         }

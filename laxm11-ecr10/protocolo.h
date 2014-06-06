@@ -31,13 +31,13 @@ typedef struct
 } mensagem;
 
 #define TAMMSG 144
+
 #define CD 0
 #define LS 1
 #define PUT 2
 #define GET 3
 #define CAT 4
 #define DIR_ATUAL 5
-#define TIMEOUT 6
 #define DADOS 7
 #define TAMARQ 8
 #define MOSTRA 9
@@ -57,3 +57,7 @@ int TemErro (mensagem_bin msg_bin);
 void envia_acknack (int socket, mensagem_bin *acknack);
 void recebe_acknack (int socket, int *resposta);
 void LimpaSocket (int socket);
+
+#define TIMEOUT 20
+#define LIXO	21
+#define SYNCSEQ	22
