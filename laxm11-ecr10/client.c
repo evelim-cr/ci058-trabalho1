@@ -22,7 +22,16 @@ unsigned char *DirAtualRemoto(int socket);
 
 int main(int argc, unsigned char const *argv[])
 {
-    int s = criaConexao();
+    system("clear");
+    if (argc!=2)
+    {
+        printf("SINTAXE:\n"
+               "\tsudo ./client nome_do_dispositivo_ethernet\n"
+               "\tVeja o nome do seu dispositivo usando o comando \"ifconfig\" no terminal.\n");
+        exit(-1);
+    }
+
+    int s = criaConexao((char *)argv[1]);
     int tamStr;
     exibeMenu(s);
     int op=LeOpcao(1,9);

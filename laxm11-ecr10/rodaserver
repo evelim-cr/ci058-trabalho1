@@ -3,4 +3,6 @@ if [[ -e server ]]; then
 	rm -fv server
 fi
 make server
-sudo ./server
+device=$(ifconfig | grep eth | tr -s \ | cut -d ' ' -f1)
+echo "Executando o comando sudo ./server "$device"."
+sudo ./server $device

@@ -3,4 +3,6 @@ if [[ -e client ]]; then
 	rm -fv client
 fi
 make client
-sudo ./client
+device=$(ifconfig | grep eth | tr -s \ | cut -d ' ' -f1)
+echo "Executando o comando sudo ./client "$device"."
+sudo ./client $device

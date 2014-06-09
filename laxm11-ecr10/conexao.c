@@ -1,7 +1,7 @@
 #include "conexao.h"
 
 
-int criaConexao(){
+int criaConexao(char *device){
 
 	/*cria socket*/
 	int soquete = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
@@ -13,7 +13,7 @@ int criaConexao(){
 	/*pega ID do dispositivo */
 	struct ifreq ir;
 	memset(&ir, 0, sizeof(struct ifreq));
-	memcpy(ir.ifr_name, DEVICE, sizeof(DEVICE));
+	memcpy(ir.ifr_name, device, sizeof(device));
 	if (ioctl(soquete, SIOCGIFINDEX, &ir) == -1) {
         printf("Erro ao fazer ioctl\n");
         exit(-1);

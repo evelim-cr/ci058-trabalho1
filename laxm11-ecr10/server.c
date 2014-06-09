@@ -13,9 +13,17 @@ void EnviaDirAtual (int socket, mensagem msg);
 
 int main(int argc, unsigned char const *argv[])
 {
-	int s = criaConexao();
-	mensagem msg;
 	system("clear");
+    if (argc!=2)
+    {
+        printf("SINTAXE:\n"
+               "\tsudo ./server nome_do_dispositivo_ethernet\n"
+               "\tVeja o nome do seu dispositivo usando o comando \"ifconfig\" no terminal.\n");
+        exit(-1);
+    }
+
+	int s = criaConexao((char *)argv[1]);
+	mensagem msg;
 	while(1)
 	{
 		bzero (&msg,sizeof(mensagem));
